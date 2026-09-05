@@ -1,0 +1,24 @@
+# ==========================================================================
+# Medicine Assistant - dependencies, grouped by phase.
+# Install ONLY what the current phase needs.
+# ==========================================================================
+
+# ---- Phase 1 (this phase) -------------------------------------------------
+# No external packages required: only the Python standard library (sqlite3).
+# Optional, if you prefer pytest over the built-in unittest runner:
+# pytest>=8.0
+
+# ---- Phase 3 - OCR (install later) ----------------------------------------
+# pytesseract>=0.3.10      # Python wrapper around the Tesseract OCR engine
+# opencv-python>=4.8       # Image loading, grayscale, denoise, thresholding
+# Pillow>=10.0             # General image handling
+# NOTE: pytesseract also needs the Tesseract program itself installed
+# (e.g. `sudo apt install tesseract-ocr` on Linux, or the Windows installer).
+
+# ---- Phase 6 - Offline Text-to-Speech (install later) ---------------------
+# pyttsx3>=2.90            # Offline TTS - no internet, no paid voice API
+
+# ---- Phase 9 - Desktop GUI (install later) --------------------------------
+# customtkinter>=5.2       # Modern-looking Tkinter widgets
+
+# Web UI + reminder API

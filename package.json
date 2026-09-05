@@ -1,0 +1,23 @@
+{
+  "name": "curamed-android",
+  "version": "1.2.0",
+  "private": true,
+  "description": "CuraMed Medicine Assistant Android app",
+  "scripts": {
+    "sync": "npx cap sync android",
+    "android": "npx cap open android",
+    "build": "npx cap sync android"
+  },
+  "dependencies": {
+    "@capacitor-mlkit/text-recognition": "8.2.0",
+    "@capacitor/android": "8.5.0",
+    "@capacitor/camera": "8.2.4",
+    "@capacitor/core": "8.5.1",
+    "@capacitor/local-notifications": "8.3.1",
+    "@capacitor/filesystem": "8.1.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.1",
+    "typescript": "^5.9.2"
+  }
+}

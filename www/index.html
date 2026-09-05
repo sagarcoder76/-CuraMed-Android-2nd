@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#f3faff" />
+  <title>CuraMed — Medical Assistant</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,400..700;1,400..700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            surface: '#f3faff',
+            'surface-low': '#edf5f9',
+            'surface-card': '#ffffff',
+            'surface-high': '#dce4e8',
+            'on-surface': '#151d20',
+            'on-surface-variant': '#3f484c',
+            primary: '#005264',
+            'primary-light': '#b5ebff',
+            secondary: '#176a5d',
+            'secondary-light': '#a5f1e0',
+            tertiary: '#773a00',
+            'tertiary-light': '#ffdcc5',
+            outline: '#6f797d'
+          },
+          fontFamily: {
+            display: ['Plus Jakarta Sans', 'sans-serif'],
+            body: ['Atkinson Hyperlegible Next', 'sans-serif']
+          },
+          boxShadow: {
+            card: '0 4px 20px -2px rgba(13,107,130,.10), 0 2px 6px -1px rgba(19,29,32,.05)',
+            fab: '0 12px 32px -4px rgba(13,107,130,.25), 0 4px 12px -2px rgba(19,29,32,.08)'
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }
+    ::-webkit-scrollbar { display: none; }
+    .safe-top { padding-top: env(safe-area-inset-top, 0px); }
+    .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24; }
+    .fill-icon { font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24; }
+
+    /* CuraMed dark mode — keeps the existing light UI intact and overlays a dark palette. */
+    body.dark-mode { background:#10181b !important; color:#edf5f7 !important; }
+    body.dark-mode .bg-surface { background:#10181b !important; }
+    body.dark-mode .bg-surface-low { background:#182226 !important; }
+    body.dark-mode .bg-surface-card, body.dark-mode .bg-white { background:#1b272c !important; }
+    body.dark-mode .bg-surface-high { background:#2b393e !important; }
+    body.dark-mode .text-on-surface { color:#edf5f7 !important; }
+    body.dark-mode .text-on-surface-variant { color:#b9c6ca !important; }
+    body.dark-mode .text-outline { color:#9aa8ad !important; }
+    body.dark-mode .border-slate-100, body.dark-mode .border-slate-200 { border-color:#2b393e !important; }
+    body.dark-mode input, body.dark-mode textarea, body.dark-mode select { color:#edf5f7 !important; }
+    body.dark-mode input::placeholder, body.dark-mode textarea::placeholder { color:#89999f !important; }
+    body.dark-mode nav, body.dark-mode header { background:rgba(16,24,27,.92) !important; border-color:#26343a !important; }
+    body.dark-mode .ring-slate-200 { --tw-ring-color:#34444a !important; }
+    body.dark-mode #dark-switch { background:#176a5d !important; }
+    body.dark-mode #dark-switch span { transform:translateX(20px); }
+    body.dark-mode .drug-info-card { background:#1b272c !important; border-color:#34444a !important; }
+    body.dark-mode .drug-info-muted { color:#b9c6ca !important; }
+    body.dark-mode .drug-info-warn { background:#3a2c1f !important; border-color:#6d5438 !important; }
+    .drug-info-section { scroll-margin-top: 80px; }
+    .scan-spin { animation:scanSpin 1s linear infinite; }
+    @keyframes scanSpin { to { transform:rotate(360deg); } }
+  </style>
+</head>
+
+<body id="app-body" class="min-h-screen bg-surface font-body text-on-surface">
+  <header class="fixed top-0 z-50 w-full safe-top border-b border-slate-100/70 bg-surface/85 backdrop-blur-xl">
+    <div class="mx-auto flex h-16 max-w-2xl items-center justify-between px-4">
+      <a href="#home" class="flex items-center gap-2" aria-label="CuraMed home">
+        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
+          <span class="material-symbols-outlined fill-icon">health_and_safety</span>
+        </div>
+        <span class="font-display text-xl font-bold text-primary">CuraMed</span>
+      </a>
+      <div class="flex items-center gap-1">
+        <button id="notification-btn" class="flex h-12 w-12 items-center justify-center rounded-full text-on-surface-variant transition hover:bg-surface-high" aria-label="Notifications">
+          <span class="material-symbols-outlined">notifications</span>
+        </button>
+        <button id="profile-btn" class="ml-1 flex h-9 w-9 items-center justify-center rounded-full bg-secondary-light font-display text-sm font-bold text-secondary" aria-label="Open profile">M</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="home" class="mx-auto max-w-2xl px-4 pb-32 pt-20">
+    <section class="mb-6 pt-1">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="font-display text-sm font-semibold uppercase tracking-wide text-primary" id="current-date">Today</p>
+          <h1 class="mt-1 font-display text-3xl font-bold tracking-tight text-on-surface">Good morning</h1>
+        </div>
+        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-secondary-light/70 text-secondary">
+          <span class="material-symbols-outlined fill-icon text-[28px]">wb_sunny</span>
+        </div>
+      </div>
+      <div class="mt-3 inline-flex items-center gap-2 rounded-full bg-secondary-light px-4 py-2 text-sm font-semibold text-secondary">
+        <span class="material-symbols-outlined fill-icon text-[19px]">check_circle</span>
+        All morning doses completed
+      </div>
+    </section>
+
+    <section class="mb-6">
+      <label for="medicine-search" class="sr-only">Search medicines</label>
+      <div class="flex h-14 items-center gap-2 rounded-full bg-surface-low px-4 shadow-sm">
+        <span class="material-symbols-outlined text-outline">search</span>
+        <input id="medicine-search" type="search" placeholder="Search pills, symptoms, or brands..." class="min-w-0 flex-1 bg-transparent text-base text-on-surface outline-none placeholder:text-outline" />
+        <button class="flex h-10 w-10 items-center justify-center rounded-full text-primary transition hover:bg-surface-high" aria-label="Search with voice">
+          <span class="material-symbols-outlined">mic</span>
+        </button>
+        <button id="camera-search" class="flex h-10 w-10 items-center justify-center rounded-full text-primary transition hover:bg-surface-high" aria-label="Search with camera">
+          <span class="material-symbols-outlined">photo_camera</span>
+        </button>
+      </div>
+    </section>
+      <div id="search-results" class="relative z-30 -mt-3 mb-3 hidden overflow-hidden rounded-2xl bg-white shadow-card"></div>
+
+    <section class="relative mb-6 overflow-hidden rounded-[2rem] bg-surface-card p-6 shadow-card">
+      <div class="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-secondary-light/45 blur-2xl"></div>
+      <div class="relative flex items-center justify-between gap-3">
+        <div class="inline-flex items-center gap-2 rounded-full bg-primary-light px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-primary">
+          <span class="relative flex h-2.5 w-2.5"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60"></span><span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary"></span></span>
+          Upcoming dose
+        </div>
+        <time id="next-dose-time" class="font-display text-xl font-bold text-primary">No dose scheduled</time>
+      </div>
+
+      <div class="relative mt-5 flex items-start gap-4">
+        <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary-light/60 text-primary">
+          <span class="material-symbols-outlined fill-icon text-4xl">medication</span>
+        </div>
+        <div class="min-w-0">
+          <h2 id="next-dose-name" class="font-display text-2xl font-bold">No medicine reminder</h2>
+          <p id="next-dose-dosage" class="mt-0.5 text-lg font-medium text-on-surface-variant">Add a reminder to get started</p>
+          <p id="next-dose-note" class="mt-2 flex items-center gap-1.5 text-sm text-on-surface-variant"><span class="material-symbols-outlined text-[18px] text-tertiary">schedule</span>We will alert you at the scheduled time</p>
+        </div>
+      </div>
+
+      <div class="relative mt-6 flex flex-col gap-3 sm:flex-row">
+        <button id="btn-take-now" class="flex h-14 flex-1 items-center justify-center gap-2 rounded-full bg-primary font-display text-base font-bold text-white shadow-md transition active:scale-[.98]">
+          <span class="material-symbols-outlined">check</span><span>Take Now</span>
+        </button>
+        <button id="btn-snooze" class="flex h-14 items-center justify-center gap-1.5 rounded-full bg-surface-high px-6 font-display text-base font-bold text-on-surface-variant transition active:scale-[.98]">
+          <span class="material-symbols-outlined">snooze</span><span>Snooze 15m</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="mb-6">
+      <div class="mb-3 flex items-center justify-between px-1">
+        <h2 class="font-display text-xl font-bold">Quick Actions</h2>
+        <span class="font-display text-sm font-semibold text-primary">Care Suite</span>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <button data-action="scan" class="group flex min-h-[172px] flex-col justify-between overflow-hidden rounded-[2rem] bg-surface-card p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-card active:scale-[.98]">
+          <div class="flex items-start justify-between gap-2"><span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary-light text-secondary"><span class="material-symbols-outlined fill-icon text-[28px]">photo_camera</span></span><span class="rounded-full bg-secondary-light/80 px-2 py-1 text-xs font-bold text-secondary">Instant AI</span></div>
+          <div><h3 class="font-display text-lg font-bold group-hover:text-primary">Scan Medicine</h3><p class="mt-1 text-sm text-on-surface-variant">Scan bottles, strips and labels</p></div>
+        </button>
+        <button data-action="reminder" class="group flex min-h-[172px] flex-col justify-between overflow-hidden rounded-[2rem] bg-surface-card p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-card active:scale-[.98]">
+          <div class="flex items-start justify-between gap-2"><span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-light text-primary"><span class="material-symbols-outlined fill-icon text-[28px]">notifications_active</span></span><span class="rounded-full bg-primary-light/70 px-2 py-1 text-xs font-bold text-primary">2 Active</span></div>
+          <div><h3 class="font-display text-lg font-bold group-hover:text-primary">Reminders</h3><p class="mt-1 text-sm text-on-surface-variant">Daily and weekly medicine alarms</p></div>
+        </button>
+        <button data-action="history" class="group flex min-h-[172px] flex-col justify-between overflow-hidden rounded-[2rem] bg-surface-card p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-card active:scale-[.98]">
+          <div class="flex items-start justify-between gap-2"><span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary-light text-secondary"><span class="material-symbols-outlined fill-icon text-[28px]">history</span></span><span class="rounded-full bg-secondary-light/70 px-2 py-1 text-xs font-bold text-secondary">96% Streak</span></div>
+          <div><h3 class="font-display text-lg font-bold group-hover:text-primary">History & Logs</h3><p class="mt-1 text-sm text-on-surface-variant">View doses and health trends</p></div>
+        </button>
+        <button data-action="drug-info" class="group flex min-h-[172px] flex-col justify-between overflow-hidden rounded-[2rem] bg-surface-card p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-card active:scale-[.98]">
+          <div class="flex items-start justify-between gap-2"><span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-tertiary-light text-tertiary"><span class="material-symbols-outlined fill-icon text-[28px]">menu_book</span></span><span class="rounded-full bg-tertiary-light/80 px-2 py-1 text-xs font-bold text-tertiary">Library</span></div>
+          <div><h3 class="font-display text-lg font-bold group-hover:text-primary">Drug Info</h3><p class="mt-1 text-sm text-on-surface-variant">Side effects, brands and interactions</p></div>
+        </button>
+      </div>
+    </section>
+
+    <button id="adherence-card" class="flex w-full items-center justify-between gap-4 rounded-[2rem] bg-surface-low p-4 text-left transition hover:bg-surface-high/70">
+      <div class="flex min-w-0 items-center gap-4">
+        <div class="relative flex h-14 w-14 shrink-0 items-center justify-center">
+          <svg class="h-full w-full -rotate-90" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="18" fill="none" stroke="#dce4e8" stroke-width="4.5"></circle><circle cx="24" cy="24" r="18" fill="none" stroke="#176a5d" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="113.1" stroke-dashoffset="18.1"></circle></svg>
+          <span class="absolute font-display text-sm font-bold">84%</span>
+        </div>
+        <div class="min-w-0"><h3 class="font-display text-base font-bold">Today’s Adherence</h3><p class="text-sm text-on-surface-variant">3 of 4 medications completed</p></div>
+      </div>
+      <span class="material-symbols-outlined text-outline">chevron_right</span>
+    </button>
+  </main>
+
+  <button id="add-scan-btn" class="fixed bottom-24 right-4 z-40 flex h-14 items-center gap-2 rounded-full bg-primary px-5 font-display text-base font-bold text-white shadow-fab transition hover:bg-[#0d6b82] active:scale-95" aria-label="Add medicine or scan medicine">
+    <span class="material-symbols-outlined">add</span><span>Add / Scan</span>
+  </button>
+
+  <nav class="fixed bottom-0 z-50 w-full safe-bottom border-t border-slate-100 bg-white/90 backdrop-blur-xl">
+    <div class="mx-auto flex h-20 max-w-2xl items-center justify-around px-1">
+      <a href="#home" class="flex h-14 flex-1 flex-col items-center justify-center text-primary"><span class="flex h-8 w-16 items-center justify-center rounded-full bg-secondary-light"><span class="material-symbols-outlined fill-icon">home</span></span><span class="mt-0.5 text-xs font-bold">Home</span></a>
+      <button data-action="history" class="flex h-14 flex-1 flex-col items-center justify-center text-on-surface-variant"><span class="flex h-8 w-16 items-center justify-center rounded-full"><span class="material-symbols-outlined">calendar_month</span></span><span class="mt-0.5 text-xs font-bold">History</span></button>
+      <button data-action="reminder" class="flex h-14 flex-1 flex-col items-center justify-center text-on-surface-variant"><span class="flex h-8 w-16 items-center justify-center rounded-full"><span class="material-symbols-outlined">alarm</span></span><span class="mt-0.5 text-xs font-bold">Reminders</span></button>
+      <button data-action="profile" class="flex h-14 flex-1 flex-col items-center justify-center text-on-surface-variant"><span class="flex h-8 w-16 items-center justify-center rounded-full"><span class="material-symbols-outlined">account_circle</span></span><span class="mt-0.5 text-xs font-bold">Profile</span></button>
+    </div>
+  </nav>
+
+  <div id="reminder-modal" class="fixed inset-0 z-[70] hidden items-end justify-center bg-black/30 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+    <div class="w-full max-w-2xl rounded-t-[2rem] bg-white p-5 shadow-2xl sm:rounded-[2rem]">
+      <div class="mb-5 flex items-center justify-between"><div><p class="text-sm font-bold uppercase tracking-wide text-primary">Care Suite</p><h2 class="font-display text-2xl font-bold">Medicine Reminders</h2></div><button id="close-reminders" class="flex h-11 w-11 items-center justify-center rounded-full bg-surface-low"><span class="material-symbols-outlined">close</span></button></div>
+      <form id="reminder-form" class="mb-5 rounded-[1.5rem] bg-surface-low p-4">
+        <div class="grid gap-3 sm:grid-cols-2"><input id="r-medicine" required placeholder="Medicine name" class="h-12 rounded-xl bg-white px-4 outline-none ring-primary/20 focus:ring-2"><input id="r-dosage" placeholder="Dose (e.g. 500 mg · 1 tablet)" class="h-12 rounded-xl bg-white px-4 outline-none ring-primary/20 focus:ring-2"><input id="r-time" required type="time" class="h-12 rounded-xl bg-white px-4 outline-none ring-primary/20 focus:ring-2"><select id="r-repeat" class="h-12 rounded-xl bg-white px-4 outline-none"><option value="daily">Every day</option><option value="weekdays">Weekdays</option><option value="once">One time</option></select></div>
+        <button class="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-primary font-display font-bold text-white"><span class="material-symbols-outlined">alarm_add</span>Add Reminder</button>
+      </form>
+      <div id="reminder-list" class="max-h-[45vh] space-y-3 overflow-auto"></div>
+    </div>
+  </div>
+
+  <div id="history-modal" class="fixed inset-0 z-[70] hidden items-end justify-center bg-black/30 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+    <div class="w-full max-w-2xl rounded-t-[2rem] bg-white p-5 shadow-2xl sm:rounded-[2rem]"><div class="mb-4 flex items-center justify-between"><div><p class="text-sm font-bold uppercase tracking-wide text-primary">Dose history</p><h2 class="font-display text-2xl font-bold">History & Logs</h2></div><button id="close-history" class="flex h-11 w-11 items-center justify-center rounded-full bg-surface-low"><span class="material-symbols-outlined">close</span></button></div><div id="history-list" class="max-h-[55vh] space-y-2 overflow-auto"></div></div>
+  </div>
+
+
+  <div id="scan-modal" class="fixed inset-0 z-[80] hidden items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+    <div class="w-full max-w-2xl rounded-t-[2rem] bg-white p-5 shadow-2xl sm:rounded-[2rem]">
+      <div class="mb-4 flex items-center justify-between">
+        <div><p class="text-sm font-bold uppercase tracking-wide text-secondary">Medicine scanner</p><h2 class="font-display text-2xl font-bold">Scan Medicine</h2></div>
+        <button id="close-scan" class="flex h-11 w-11 items-center justify-center rounded-full bg-surface-low"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="rounded-[1.5rem] bg-surface-low p-4">
+        <div id="scan-preview-wrap" class="hidden overflow-hidden rounded-2xl bg-black"><img id="scan-preview" class="max-h-[42vh] w-full object-contain" alt="Captured medicine label" /></div>
+        <div id="scan-empty" class="flex min-h-[180px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 p-6 text-center">
+          <span class="material-symbols-outlined text-5xl text-primary">document_scanner</span>
+          <p class="mt-2 font-bold">Capture a clear medicine label</p><p class="mt-1 text-sm text-on-surface-variant">Keep the medicine name and expiry text inside the frame.</p>
+        </div>
+        <div class="mt-4 grid grid-cols-2 gap-3">
+          <button id="take-photo-btn" class="flex h-12 items-center justify-center gap-2 rounded-full bg-primary font-bold text-white"><span class="material-symbols-outlined">photo_camera</span>Camera</button>
+          <button id="choose-photo-btn" class="flex h-12 items-center justify-center gap-2 rounded-full bg-white font-bold text-primary ring-1 ring-slate-200"><span class="material-symbols-outlined">photo_library</span>Gallery</button>
+        </div>
+        <input id="scan-file-input" type="file" accept="image/*" capture="environment" class="hidden" />
+        <div id="scan-status" class="mt-3 text-center text-sm font-semibold text-on-surface-variant">Ready to scan.</div>
+        <textarea id="ocr-text" rows="4" placeholder="Detected text will appear here..." class="mt-3 hidden w-full rounded-2xl bg-white p-3 text-sm outline-none ring-primary/20 focus:ring-2"></textarea>
+        <div id="scan-matches" class="mt-3 space-y-2"></div>
+        <button id="use-scan-text" class="mt-3 hidden h-12 w-full rounded-full bg-secondary font-bold text-white">Use detected name for a reminder</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="drug-info-modal" class="fixed inset-0 z-[85] hidden items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+    <div class="w-full max-w-2xl rounded-t-[2rem] bg-white p-5 shadow-2xl sm:rounded-[2rem]">
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <div class="min-w-0"><p class="text-sm font-bold uppercase tracking-wide text-tertiary">CuraMed Library</p><h2 id="drug-info-title" class="font-display text-2xl font-bold truncate">Drug information</h2><p id="drug-info-subtitle" class="text-sm text-on-surface-variant"></p></div>
+        <button id="close-drug-info" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-low"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div id="drug-info-list" class="max-h-[68vh] space-y-3 overflow-auto"></div>
+    </div>
+  </div>
+
+  <div id="profile-modal" class="fixed inset-0 z-[80] hidden items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+    <div class="w-full max-w-2xl rounded-t-[2rem] bg-white p-5 shadow-2xl sm:rounded-[2rem]">
+      <div class="mb-4 flex items-center justify-between">
+        <div><p class="text-sm font-bold uppercase tracking-wide text-primary">CuraMed</p><h2 class="font-display text-2xl font-bold" data-i18n="profile">Profile & Settings</h2></div>
+        <button id="close-profile" class="flex h-11 w-11 items-center justify-center rounded-full bg-surface-low"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="space-y-3">
+        <div class="flex items-center gap-4 rounded-2xl bg-surface-low p-4">
+          <div id="profile-avatar" class="flex h-14 w-14 items-center justify-center rounded-full bg-secondary-light font-display text-xl font-bold text-secondary">M</div>
+          <div class="min-w-0 flex-1"><p class="text-xs font-bold uppercase tracking-wide text-outline">Your name</p><input id="profile-name" class="mt-1 w-full bg-transparent font-display text-lg font-bold outline-none" placeholder="Your name" /></div>
+        </div>
+        <label class="flex items-center justify-between rounded-2xl bg-surface-low p-4">
+          <span><span class="block font-bold" data-i18n="language">Language</span><span class="text-sm text-on-surface-variant">English · हिन्दी · ਪੰਜਾਬੀ</span></span>
+          <select id="language-select" class="rounded-xl bg-white px-3 py-2 font-semibold outline-none"><option value="en">English</option><option value="hi">हिन्दी</option><option value="pa">ਪੰਜਾਬੀ</option></select>
+        </label>
+        <button id="dark-mode-toggle" class="flex w-full items-center justify-between rounded-2xl bg-surface-low p-4 text-left">
+          <span><span class="block font-bold" data-i18n="darkMode">Dark mode</span><span id="dark-mode-sub" class="text-sm text-on-surface-variant">Comfortable low-light appearance</span></span>
+          <span id="dark-switch" class="relative h-7 w-12 rounded-full bg-surface-high"><span class="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow transition"></span></span>
+        </button>
+        <button id="notification-settings" class="flex w-full items-center justify-between rounded-2xl bg-surface-low p-4 text-left">
+          <span><span class="block font-bold" data-i18n="notifications">Notifications & alarms</span><span id="notification-status" class="text-sm text-on-surface-variant">Checking…</span></span>
+          <span class="material-symbols-outlined text-primary">chevron_right</span>
+        </button>
+        <button id="clear-history-btn" class="flex w-full items-center justify-between rounded-2xl bg-surface-low p-4 text-left">
+          <span><span class="block font-bold" data-i18n="clearHistory">Clear history & logs</span><span class="text-sm text-on-surface-variant">Remove locally saved dose records</span></span>
+          <span class="material-symbols-outlined text-outline">delete_sweep</span>
+        </button>
+        <div class="rounded-2xl border border-slate-200 p-4 text-sm text-on-surface-variant"><b>CuraMed</b> · Medicine Assistant<br/>Reminders, scan, search and history run on this device. Bundled medicine records are demo data.</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="notification-modal" class="fixed inset-0 z-[90] hidden items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+    <div class="w-full max-w-lg rounded-t-[2rem] bg-white p-5 shadow-2xl sm:rounded-[2rem]">
+      <div class="flex items-center justify-between"><h2 class="font-display text-xl font-bold" data-i18n="notifications">Notifications & alarms</h2><button id="close-notification" class="flex h-11 w-11 items-center justify-center rounded-full bg-surface-low"><span class="material-symbols-outlined">close</span></button></div>
+      <p id="notification-detail" class="mt-3 text-sm leading-6 text-on-surface-variant">CuraMed uses Android local notifications for medicine reminders.</p>
+      <button id="enable-notifications" class="mt-4 h-12 w-full rounded-full bg-primary font-bold text-white">Enable notifications & exact alarms</button>
+    </div>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite" class="pointer-events-none fixed left-1/2 top-20 z-[60] w-max max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-4 rounded-full bg-[#2a3235] px-4 py-3 text-center text-sm font-semibold text-white opacity-0 shadow-lg transition-all duration-300"></div>
+
+  <script>
+const $=id=>document.getElementById(id);
+const toast=$('toast');let toastTimer;
+function showToast(message){clearTimeout(toastTimer);toast.textContent=message;toast.classList.remove('opacity-0','-translate-y-4');toast.classList.add('opacity-100','translate-y-0');toastTimer=setTimeout(()=>{toast.classList.add('opacity-0','-translate-y-4');toast.classList.remove('opacity-100','translate-y-0')},2600);}
+const REMINDERS_KEY='curamed.reminders.v3',HISTORY_KEY='curamed.history.v3',PROFILE_KEY='curamed.profile.v2';
+const modal=$('reminder-modal'),historyModal=$('history-modal'),scanModal=$('scan-modal'),profileModal=$('profile-modal'),notificationModal=$('notification-modal'),drugInfoModal=$('drug-info-modal');
+let medicines=[],mobileNotifications=null,cameraPlugin=null,ocrPlugin=null,filesystemPlugin=null,currentScanText='',searchTimer;window.reminders=[];window.currentReminder=null;
+try{const plugins=window.Capacitor?.Plugins||{};mobileNotifications=plugins.LocalNotifications||null;cameraPlugin=plugins.Camera||null;ocrPlugin=plugins.TextRecognition||null;filesystemPlugin=plugins.Filesystem||null;}catch(e){}
+const I18N={
+en:{profile:'Profile & Settings',language:'Language',darkMode:'Dark mode',notifications:'Notifications & alarms',clearHistory:'Clear history & logs',scan:'Scan Medicine',history:'History & Logs',reminders:'Reminders',drugInfo:'Drug Info',quick:'Quick Actions',upcoming:'Upcoming dose',take:'Take Now',snooze:'Snooze 15m',add:'Add Reminder',search:'Search pills, symptoms, or brands...',goodMorning:'Good morning',noReminder:'No medicine reminder',addStart:'Add a reminder to get started',noDose:'No dose scheduled',care:'Care Suite',scanner:'Medicine scanner',ready:'Ready to scan.',camera:'Camera',gallery:'Gallery',drugLibrary:'Medicine library',howToTake:'How to take / use',sideEffects:'Common side effects',important:'Important precautions',interactions:'Interactions',uses:'Common uses',storage:'Storage',source:'Source',checkWithProfessional:'Check with a doctor or pharmacist before use if any of these apply.',noInfo:'No medicine information found.'},
+hi:{profile:'प्रोफ़ाइल और सेटिंग्स',language:'भाषा',darkMode:'डार्क मोड',notifications:'नोटिफिकेशन और अलार्म',clearHistory:'इतिहास और लॉग साफ़ करें',scan:'दवा स्कैन करें',history:'इतिहास और लॉग',reminders:'रिमाइंडर',drugInfo:'दवा जानकारी',quick:'त्वरित कार्य',upcoming:'अगली खुराक',take:'अभी लिया',snooze:'15 मिनट बाद',add:'रिमाइंडर जोड़ें',search:'दवा, लक्षण या ब्रांड खोजें...',goodMorning:'सुप्रभात',noReminder:'कोई दवा रिमाइंडर नहीं',addStart:'शुरू करने के लिए रिमाइंडर जोड़ें',noDose:'कोई खुराक निर्धारित नहीं',care:'केयर सूट',scanner:'दवा स्कैनर',ready:'स्कैन के लिए तैयार।',camera:'कैमरा',gallery:'गैलरी',drugLibrary:'दवा लाइब्रेरी',howToTake:'कैसे लें / उपयोग करें',sideEffects:'आम साइड इफेक्ट',important:'महत्वपूर्ण सावधानियां',interactions:'इंटरैक्शन',uses:'आम उपयोग',storage:'स्टोरेज',source:'स्रोत',checkWithProfessional:'यदि इनमें से कुछ लागू होता है तो डॉक्टर या फार्मासिस्ट से पूछें।',noInfo:'दवा की जानकारी नहीं मिली।'},
+pa:{profile:'ਪ੍ਰੋਫ਼ਾਈਲ ਅਤੇ ਸੈਟਿੰਗਾਂ',language:'ਭਾਸ਼ਾ',darkMode:'ਡਾਰਕ ਮੋਡ',notifications:'ਨੋਟੀਫਿਕੇਸ਼ਨ ਅਤੇ ਅਲਾਰਮ',clearHistory:'ਇਤਿਹਾਸ ਅਤੇ ਲੌਗ ਮਿਟਾਓ',scan:'ਦਵਾਈ ਸਕੈਨ ਕਰੋ',history:'ਇਤਿਹਾਸ ਅਤੇ ਲੌਗ',reminders:'ਰਿਮਾਈਂਡਰ',drugInfo:'ਦਵਾਈ ਜਾਣਕਾਰੀ',quick:'ਤੁਰੰਤ ਕਾਰਵਾਈਆਂ',upcoming:'ਅਗਲੀ ਖੁਰਾਕ',take:'ਹੁਣੇ ਲਿਆ',snooze:'15 ਮਿੰਟ ਬਾਅਦ',add:'ਰਿਮਾਈਂਡਰ ਜੋੜੋ',search:'ਦਵਾਈ, ਲੱਛਣ ਜਾਂ ਬ੍ਰਾਂਡ ਖੋਜੋ...',goodMorning:'ਸਤ ਸ੍ਰੀ ਅਕਾਲ',noReminder:'ਕੋਈ ਦਵਾਈ ਰਿਮਾਈਂਡਰ ਨਹੀਂ',addStart:'ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਰਿਮਾਈਂਡਰ ਜੋੜੋ',noDose:'ਕੋਈ ਖੁਰਾਕ ਨਿਰਧਾਰਤ ਨਹੀਂ',care:'ਕੇਅਰ ਸੂਟ',scanner:'ਦਵਾਈ ਸਕੈਨਰ',ready:'ਸਕੈਨ ਲਈ ਤਿਆਰ।',camera:'ਕੈਮਰਾ',gallery:'ਗੈਲਰੀ',drugLibrary:'ਦਵਾਈ ਲਾਇਬ੍ਰੇਰੀ',howToTake:'ਕਿਵੇਂ ਲੈਣੀ / ਵਰਤਣੀ ਹੈ',sideEffects:'ਆਮ ਸਾਈਡ ਇਫੈਕਟ',important:'ਮਹੱਤਵਪੂਰਨ ਸਾਵਧਾਨੀਆਂ',interactions:'ਇੰਟਰੈਕਸ਼ਨ',uses:'ਆਮ ਵਰਤੋਂ',storage:'ਸਟੋਰੇਜ',source:'ਸਰੋਤ',checkWithProfessional:'ਜੇ ਇਹਨਾਂ ਵਿੱਚੋਂ ਕੁਝ ਲਾਗੂ ਹੁੰਦਾ ਹੈ ਤਾਂ ਡਾਕਟਰ ਜਾਂ ਫਾਰਮਾਸਿਸਟ ਨਾਲ ਪੁੱਛੋ।',noInfo:'ਦਵਾਈ ਦੀ ਜਾਣਕਾਰੀ ਨਹੀਂ ਮਿਲੀ।'}};
+function readJson(k,f=[]){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(f));}catch{return f;}}
+function saveReminders(){localStorage.setItem(REMINDERS_KEY,JSON.stringify(window.reminders));}
+function saveHistory(rows){localStorage.setItem(HISTORY_KEY,JSON.stringify(rows.slice(0,250)));}
+function profile(){return readJson(PROFILE_KEY,{name:'',language:'en',dark:false});}
+function saveProfile(p){localStorage.setItem(PROFILE_KEY,JSON.stringify(p));}
+function esc(x){return String(x??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function applyTheme(){const p=profile();document.body.classList.toggle('dark-mode',!!p.dark);$('dark-switch')?.classList.toggle('bg-secondary',!!p.dark);$('dark-switch')?.classList.toggle('bg-surface-high',!p.dark);document.querySelector('meta[name="theme-color"]').content=p.dark?'#10181b':'#f3faff';}
+function applyLanguage(){
+ const p=profile(),t=I18N[p.language]||I18N.en;document.documentElement.lang=p.language==='hi'?'hi':p.language==='pa'?'pa':'en';
+ document.querySelectorAll('[data-i18n]').forEach(el=>{if(t[el.dataset.i18n])el.textContent=t[el.dataset.i18n]});
+ $('medicine-search').placeholder=t.search;$('profile-name').value=p.name||'';$('language-select').value=p.language;$('profile-avatar').textContent=(p.name||'M').trim().charAt(0).toUpperCase()||'M';
+ $('current-date').textContent=new Intl.DateTimeFormat(p.language==='hi'?'hi-IN':p.language==='pa'?'pa-IN':'en-IN',{weekday:'long',month:'short',day:'numeric'}).format(new Date());
+ $('dark-mode-sub').textContent=p.dark?(p.language==='hi'?'आंखों के लिए आरामदायक डार्क थीम':p.language==='pa'?'ਅੱਖਾਂ ਲਈ ਆਰਾਮਦਾਇਕ ਡਾਰਕ ਥੀਮ':'Comfortable low-light appearance'):(p.language==='hi'?'लाइट थीम':p.language==='pa'?'ਲਾਈਟ ਥੀਮ':'Light appearance');
+}
+function openModal(m){m.classList.remove('hidden');m.classList.add('flex')}function closeModal(m){m.classList.add('hidden');m.classList.remove('flex')}
+function openProfile(){openModal(profileModal);applyLanguage();applyTheme();updateNotificationStatus()}function closeProfile(){closeModal(profileModal)}
+$('profile-btn').onclick=openProfile;$('close-profile').onclick=closeProfile;profileModal.addEventListener('click',e=>{if(e.target===profileModal)closeProfile()});
+$('profile-name').oninput=e=>{const p=profile();p.name=e.target.value;saveProfile(p);$('profile-avatar').textContent=(p.name||'M').trim().charAt(0).toUpperCase()||'M';};
+$('language-select').onchange=e=>{const p=profile();p.language=e.target.value;saveProfile(p);applyLanguage();renderReminders();updateNextDose();};
+$('dark-mode-toggle').onclick=()=>{const p=profile();p.dark=!p.dark;saveProfile(p);applyTheme();};
+$('notification-btn').onclick=()=>{openModal(notificationModal);updateNotificationStatus()};$('close-notification').onclick=()=>closeModal(notificationModal);
+notificationModal.addEventListener('click',e=>{if(e.target===notificationModal)closeModal(notificationModal)});
+$('notification-settings').onclick=()=>{closeProfile();openModal(notificationModal);updateNotificationStatus()};
+async function setupNativeNotifications(){
+ if(!mobileNotifications){$('notification-status').textContent='Browser preview mode';return;}
+ try{await mobileNotifications.createChannel({id:'medicine-reminders',name:'Medicine reminders',description:'CuraMed medicine reminder alarms',importance:5,sound:'default',vibration:true});let p=await mobileNotifications.checkPermissions();if(p.display!=='granted')await mobileNotifications.requestPermissions();if(mobileNotifications.addListener)await mobileNotifications.addListener('localNotificationActionPerformed',ev=>{window.currentReminder=window.reminders.find(r=>r.id===ev.notification?.extra?.reminderId)||window.currentReminder;openReminderModal()});updateNotificationStatus();}catch(e){console.warn(e);$('notification-status').textContent='Permission needs attention';}
+}
+async function updateNotificationStatus(){if(!mobileNotifications){$('notification-status').textContent='Browser preview mode';return;}try{const p=await mobileNotifications.checkPermissions();let exact='not checked';if(mobileNotifications.checkExactNotificationSetting)exact=(await mobileNotifications.checkExactNotificationSetting()).exact_alarm;$('notification-status').textContent=`Notifications: ${p.display} · Exact alarms: ${exact}`;}catch(e){$('notification-status').textContent='Tap to enable notifications';}}
+$('enable-notifications').onclick=async()=>{if(!mobileNotifications){showToast('Native notifications are available in the Android APK.');return;}try{await mobileNotifications.requestPermissions();if(mobileNotifications.changeExactNotificationSetting)await mobileNotifications.changeExactNotificationSetting();await updateNotificationStatus();await rescheduleAll();showToast('Notification and alarm settings updated.');}catch(e){showToast('Please allow notifications and alarms in Android settings.')}};
+function nid(rid,i=0){return Math.min(Math.abs(Number(rid)%1000000)*1000+Number(i),2147483000)}
+function occurrenceDates(time,mode){const [h,m]=time.split(':').map(Number),now=new Date(),out=[],limit=mode==='daily'?30:mode==='weekdays'?28:1;for(let i=0;i<120&&out.length<limit;i++){const d=new Date(now);d.setDate(now.getDate()+i);d.setHours(h,m,0,0);if(d<=now)continue;if(mode==='weekdays'&&[0,6].includes(d.getDay()))continue;out.push(d)}return out}
+async function cancelReminderNotifications(r){if(!mobileNotifications||!r.notificationIds?.length)return;try{await mobileNotifications.cancel({notifications:r.notificationIds.map(id=>({id}))})}catch(e){}r.notificationIds=[]}
+async function scheduleReminderNotifications(r){
+ if(!mobileNotifications||!r.enabled)return;await cancelReminderNotifications(r);
+ const dates=occurrenceDates(r.reminder_time,r.repeat_type),ns=dates.map((at,i)=>({id:nid(r.id,i),title:'CuraMed Medicine Reminder',body:`Time to take ${r.medicine_name}${r.dosage?' — '+r.dosage:''}`,schedule:{at,allowWhileIdle:true},channelId:'medicine-reminders',sound:'default',autoCancel:true,foreground:true,extra:{reminderId:r.id}}));
+ try{const result=await mobileNotifications.schedule({notifications:ns});r.notificationIds=ns.map(n=>n.id);saveReminders();if(result.warning)console.warn(result.warning)}catch(e){console.warn(e);showToast('Please enable notifications and exact alarms.')}}
+async function rescheduleAll(){for(const r of window.reminders){if(r.enabled)await scheduleReminderNotifications(r);else await cancelReminderNotifications(r)}}
+function openReminderModal(){openModal(modal);loadReminders()}function closeReminderModal(){closeModal(modal)}
+$('close-reminders').onclick=closeReminderModal;modal.addEventListener('click',e=>{if(e.target===modal)closeReminderModal()});
+function renderReminders(){const box=$('reminder-list');if(!window.reminders.length){box.innerHTML='<div class="rounded-2xl bg-surface-low p-5 text-center text-sm text-on-surface-variant">No reminders yet. Add your first medicine alarm above.</div>';return}box.innerHTML=window.reminders.map(r=>`<div class="flex items-center gap-3 rounded-2xl bg-surface-low p-4"><div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary"><span class="material-symbols-outlined fill-icon">medication</span></div><div class="min-w-0 flex-1"><div class="flex items-center justify-between gap-2"><h3 class="font-display font-bold">${esc(r.medicine_name)}</h3><span class="font-display font-bold text-primary">${r.reminder_time}</span></div><p class="text-sm text-on-surface-variant">${esc(r.dosage||'Dose not specified')} · ${r.repeat_type}</p></div><button onclick="toggleReminder(${r.id},${!r.enabled})" class="h-10 rounded-full px-3 text-xs font-bold ${r.enabled?'bg-secondary-light text-secondary':'bg-surface-high text-outline'}">${r.enabled?'ON':'OFF'}</button><button onclick="deleteReminder(${r.id})" class="flex h-10 w-10 items-center justify-center rounded-full text-outline"><span class="material-symbols-outlined">delete</span></button></div>`).join('')}
+function updateNextDose(){const now=new Date(),active=window.reminders.filter(r=>r.enabled);let best=null,bd=Infinity;active.forEach(r=>{const [h,m]=r.reminder_time.split(':').map(Number);let d=new Date(now);d.setHours(h,m,0,0);if(d<=now)d.setDate(d.getDate()+1);if(r.repeat_type==='weekdays'&&[0,6].includes(d.getDay()))do{d.setDate(d.getDate()+1)}while([0,6].includes(d.getDay()));const delta=d-now;if(delta<bd){bd=delta;best={...r,when:d}}});window.currentReminder=best;const t=I18N[profile().language]||I18N.en;$('next-dose-time').textContent=best?new Intl.DateTimeFormat('en-IN',{hour:'numeric',minute:'2-digit'}).format(best.when):t.noDose;$('next-dose-name').textContent=best?best.medicine_name:t.noReminder;$('next-dose-dosage').textContent=best?(best.dosage||'Dose not specified'):t.addStart}
+async function loadReminders(){window.reminders=readJson(REMINDERS_KEY,[]);renderReminders();updateNextDose()}
+async function addReminder(d){const r={id:Date.now(),medicine_name:d.medicine_name.trim(),dosage:(d.dosage||'').trim(),reminder_time:d.reminder_time,repeat_type:['daily','weekdays','once'].includes(d.repeat_type)?d.repeat_type:'daily',enabled:true,created_at:new Date().toISOString(),last_taken:null,notificationIds:[]};window.reminders.push(r);saveReminders();await scheduleReminderNotifications(r);renderReminders();updateNextDose()}
+$('reminder-form').onsubmit=async e=>{e.preventDefault();const n=$('r-medicine').value.trim(),t=$('r-time').value;if(!n||!t){showToast('Medicine and time are required.');return}await addReminder({medicine_name:n,dosage:$('r-dosage').value,reminder_time:t,repeat_type:$('r-repeat').value});e.target.reset();showToast('Medicine reminder added.')};
+window.toggleReminder=async(id,en)=>{const r=window.reminders.find(x=>x.id===id);if(!r)return;r.enabled=en;if(en)await scheduleReminderNotifications(r);else await cancelReminderNotifications(r);saveReminders();renderReminders();updateNextDose()};
+window.deleteReminder=async id=>{const r=window.reminders.find(x=>x.id===id);if(!r)return;if(!confirm('Delete this reminder?'))return;await cancelReminderNotifications(r);window.reminders=window.reminders.filter(x=>x.id!==id);saveReminders();renderReminders();updateNextDose();showToast('Reminder deleted.')};
+function logDose(id,action){const r=window.reminders.find(x=>x.id===id);if(!r)return;const rows=readJson(HISTORY_KEY,[]);rows.unshift({id:Date.now(),reminder_id:id,medicine_name:r.medicine_name,dosage:r.dosage,action,action_time:new Date().toISOString()});if(action==='taken')r.last_taken=new Date().toISOString();saveHistory(rows);saveReminders();renderHistoryStats()}
+function renderHistoryStats(){const rows=readJson(HISTORY_KEY,[]),taken=rows.filter(x=>x.action==='taken'),today=taken.filter(x=>new Date(x.action_time).toDateString()===new Date().toDateString());const p=document.querySelector('#adherence-card p');if(p)p.textContent=`${today.length} dose${today.length===1?'':'s'} recorded today · ${taken.length} total`}
+function openHistoryModal(){openModal(historyModal);loadHistory()}$('close-history').onclick=()=>closeModal(historyModal);historyModal.addEventListener('click',e=>{if(e.target===historyModal)closeModal(historyModal)});
+function loadHistory(){const box=$('history-list'),rows=readJson(HISTORY_KEY,[]);box.innerHTML=`<div class="mb-3 rounded-2xl bg-primary-light/50 p-4"><p class="text-sm font-bold text-primary">Dose log summary</p><p class="mt-1 text-sm text-on-surface-variant">${rows.filter(x=>x.action==='taken').length} taken · ${rows.filter(x=>x.action==='snoozed').length} snoozed · ${rows.length} total events</p></div>`+(rows.length?rows.map(x=>`<div class="flex items-center justify-between gap-3 rounded-2xl bg-surface-low p-4"><div><p class="font-display font-bold">${esc(x.medicine_name)}</p><p class="text-sm text-on-surface-variant">${esc(x.dosage||'Dose')} · ${esc(x.action)}</p></div><time class="text-xs font-semibold text-outline">${new Date(x.action_time).toLocaleString()}</time></div>`).join(''):'<div class="rounded-2xl bg-surface-low p-5 text-center text-sm text-on-surface-variant">No dose history yet.</div>')}
+$('clear-history-btn').onclick=()=>{if(confirm('Clear all dose history and logs?')){localStorage.removeItem(HISTORY_KEY);loadHistory();renderHistoryStats();showToast('History cleared.')}};
+$('btn-take-now').onclick=()=>{if(!window.currentReminder){openReminderModal();return}logDose(window.currentReminder.id,'taken');$('btn-take-now').innerHTML='<span class="material-symbols-outlined">check_circle</span><span>Recorded!</span>';showToast('Dose recorded.');setTimeout(()=>{$('btn-take-now').innerHTML='<span class="material-symbols-outlined">check</span><span>Take Now</span>'},1800)};
+$('btn-snooze').onclick=async()=>{const r=window.currentReminder;if(!r){showToast('No active dose to snooze.');return}logDose(r.id,'snoozed');if(mobileNotifications){try{await mobileNotifications.schedule({notifications:[{id:nid(r.id,999),title:'CuraMed Snoozed Reminder',body:`Time to take ${r.medicine_name}${r.dosage?' — '+r.dosage:''}`,schedule:{at:new Date(Date.now()+900000),allowWhileIdle:true},channelId:'medicine-reminders',sound:'default',foreground:true}]});showToast('Reminder snoozed for 15 minutes.')}catch(e){showToast('Could not schedule snooze.')}}else showToast('Snoozed for 15 minutes.')};
+const searchInput=$('medicine-search'),searchResults=$('search-results');
+function norm(v){return String(v||'').toLowerCase().replace(/[^a-z0-9\u0900-\u097f\u0a00-\u0a7f]+/g,' ').replace(/\s+/g,' ').trim()}
+function tokens(v){return norm(v).split(' ').filter(x=>x.length>2)}
+function medicineScore(m,q){
+ const nq=norm(q); if(!nq)return 0; const fields=[m.medicine_name,m.brand_name,m.generic_name,m.active_ingredient,m.common_uses,m.category,m.strength];
+ let score=0; fields.forEach((f,idx)=>{const z=norm(f); if(z.includes(nq)) score+=idx<3?20:8;});
+ const qt=tokens(q); const all=tokens(fields.join(' ')); qt.forEach(t=>{if(all.some(x=>x.includes(t)||t.includes(x)))score+=5});
+ return score;
+}
+function renderSearchResults(q){
+ const rows=medicines.map(m=>({m,score:medicineScore(m,q)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,8).map(x=>x.m);
+ searchResults.innerHTML=rows.length?rows.map(x=>`<button onclick="showMedicine(${x.id})" class="flex w-full items-center gap-3 p-4 text-left hover:bg-surface-low"><span class="material-symbols-outlined text-primary">medication</span><span class="min-w-0"><b>${esc(x.medicine_name)}</b><small class="block text-outline">${esc(x.brand_name||'')} · ${esc(x.generic_name||'')}</small></span><span class="material-symbols-outlined ml-auto text-outline">chevron_right</span></button>`).join(''):'<div class="p-4 text-sm text-on-surface-variant">No matching medicine found. Try the generic name or brand.</div>';
+ searchResults.classList.remove('hidden');
+}
+searchInput.oninput=()=>{clearTimeout(searchTimer);const q=searchInput.value.trim();if(!q){searchResults.classList.add('hidden');return}searchTimer=setTimeout(()=>renderSearchResults(q),80)};
+window.showMedicine=id=>{const x=medicines.find(m=>m.id===id);if(!x)return;searchResults.classList.add('hidden');openMedicineInfo(x)};
+
+function safeText(v){return esc(String(v||'Not listed.'))}
+function bullets(v){return String(v||'Not listed.').split(/[;\n]+/).map(x=>x.trim()).filter(Boolean).map(x=>`<li>${safeText(x)}</li>`).join('')||'<li>Not listed.</li>'}
+function openMedicineInfo(x){
+ if(!x)return;
+ const p=profile(),t=I18N[p.language]||I18N.en;
+ $('drug-info-title').textContent=x.medicine_name||'Medicine';
+ $('drug-info-subtitle').textContent=[x.brand_name,x.generic_name,x.strength].filter(Boolean).join(' · ');
+ const precautions=[x.pregnancy_warning,x.breastfeeding_warning,x.children_warning,x.elderly_warning,x.kidney_warning,x.liver_warning].filter(Boolean);
+ $('drug-info-list').innerHTML=`
+ <div class="rounded-2xl bg-primary-light/40 p-4"><p class="text-sm font-bold text-primary">${safeText(x.category)}</p><p class="mt-2 text-sm leading-6 text-on-surface-variant">${safeText(x.general_usage)}</p></div>
+ <section class="drug-info-section rounded-2xl bg-surface-low p-4"><h3 class="font-bold">${safeText(t.uses)}</h3><ul class="mt-2 list-disc space-y-1 pl-5 text-sm leading-6">${bullets(x.common_uses)}</ul></section>
+ <section class="drug-info-section rounded-2xl bg-surface-low p-4"><h3 class="font-bold">${safeText(t.howToTake)}</h3><p class="mt-2 text-sm leading-6 text-on-surface-variant">${safeText(x.administration)}</p></section>
+ <section class="drug-info-section rounded-2xl bg-surface-low p-4"><h3 class="font-bold">${safeText(t.sideEffects)}</h3><ul class="mt-2 list-disc space-y-1 pl-5 text-sm leading-6">${bullets(x.common_side_effects)}</ul></section>
+ <section class="drug-info-section drug-info-warn rounded-2xl border border-amber-200 bg-amber-50 p-4"><h3 class="font-bold">${safeText(t.important)}</h3><p class="mt-2 text-sm leading-6">${safeText(t.checkWithProfessional)}</p><ul class="mt-2 list-disc space-y-1 pl-5 text-sm leading-6">${precautions.map(safeText).map(v=>`<li>${v}</li>`).join('')}</ul><p class="mt-3 text-sm leading-6">${safeText(x.serious_warnings)}</p></section>
+ <section class="drug-info-section rounded-2xl bg-surface-low p-4"><h3 class="font-bold">${safeText(t.interactions)}</h3><p class="mt-2 text-sm leading-6 text-on-surface-variant">${safeText(x.drug_interactions)}</p><p class="mt-2 text-sm leading-6 text-on-surface-variant">${safeText(x.food_interactions)}</p></section>
+ <section class="drug-info-section rounded-2xl bg-surface-low p-4"><h3 class="font-bold">${safeText(t.storage)}</h3><p class="mt-2 text-sm leading-6 text-on-surface-variant">${safeText(x.storage_information)}</p></section>
+ <div class="rounded-2xl border border-slate-200 p-4 text-xs leading-5 text-on-surface-variant"><b>${safeText(t.source)}:</b> ${safeText(x.source)}</div>`;
+ openModal(drugInfoModal);
+}
+function openDrugLibrary(){
+ const p=profile(),t=I18N[p.language]||I18N.en;
+ $('drug-info-title').textContent=t.drugLibrary;
+ $('drug-info-subtitle').textContent=`${medicines.length} bundled demo records`;
+ $('drug-info-list').innerHTML=medicines.map(x=>`<button onclick="openMedicineInfo(medicines.find(m=>m.id===${x.id}))" class="drug-info-card flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-left"><span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary"><span class="material-symbols-outlined">medication</span></span><span class="min-w-0 flex-1"><b class="block truncate">${esc(x.medicine_name)}</b><small class="block text-outline">${esc(x.brand_name||'')} · ${esc(x.generic_name||'')}</small></span><span class="material-symbols-outlined text-outline">chevron_right</span></button>`).join('');
+ openModal(drugInfoModal);
+}
+$('close-drug-info').onclick=()=>closeModal(drugInfoModal);drugInfoModal.addEventListener('click',e=>{if(e.target===drugInfoModal)closeModal(drugInfoModal)});
+
+async function preprocessForOCR(src){
+  return await new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.onload=()=>{
+      const max=2200, scale=Math.min(max/Math.max(img.naturalWidth||img.width,1),max/Math.max(img.naturalHeight||img.height,1),2.2);
+      const w=Math.max(900,Math.round((img.naturalWidth||img.width)*scale));
+      const h=Math.max(900,Math.round((img.naturalHeight||img.height)*scale));
+      const c=document.createElement('canvas'); c.width=w;c.height=h;
+      const ctx=c.getContext('2d',{willReadFrequently:true});
+      ctx.drawImage(img,0,0,w,h);
+      const d=ctx.getImageData(0,0,w,h), a=d.data;
+      for(let i=0;i<a.length;i+=4){
+        const y=0.299*a[i]+0.587*a[i+1]+0.114*a[i+2];
+        const boosted=Math.max(0,Math.min(255,(y-128)*1.35+128));
+        a[i]=a[i+1]=a[i+2]=boosted;
+      }
+      ctx.putImageData(d,0,0);
+      resolve(c.toDataURL('image/jpeg',0.94));
+    };
+    img.onerror=reject; img.src=src;
+  });
+}
+function normalizeOCRText(text){
+  return String(text||'').replace(/[^\p{L}\p{N}\s.-]/gu,' ').replace(/\s+/g,' ').trim();
+}
+function editDistance(a,b){
+  a=String(a);b=String(b);if(a===b)return 0;if(!a)return b.length;if(!b)return a.length;
+  const prev=Array(b.length+1).fill(0),cur=Array(b.length+1).fill(0);
+  for(let j=0;j<=b.length;j++)prev[j]=j;
+  for(let i=1;i<=a.length;i++){cur[0]=i;for(let j=1;j<=b.length;j++)cur[j]=Math.min(cur[j-1]+1,prev[j]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));for(let j=0;j<=b.length;j++)prev[j]=cur[j];}
+  return prev[b.length];
+}
+function fuzzyTokenScore(token,target){
+  if(token===target)return 1;if(token.length<3||target.length<3)return 0;
+  if(token.includes(target)||target.includes(token))return 0.86;
+  const d=editDistance(token,target), max=Math.max(token.length,target.length);
+  return d<=2 ? Math.max(0,1-d/max) : 0;
+}
+function medicineOCRScore(m,text){
+  const hay=normalizeOCRText(text).toLowerCase();
+  if(!hay)return 0;
+  const fields=[m.medicine_name,m.brand_name,m.generic_name,m.active_ingredient,m.strength,m.category,m.common_uses].filter(Boolean).map(String);
+  let score=0;
+  for(const field of fields){
+    const f=normalizeOCRText(field).toLowerCase(); if(!f)continue;
+    if(hay.includes(f)) score+=Math.min(70,20+f.length*2);
+    const tokens=f.split(/\s+/).filter(x=>x.length>=3);
+    for(const t of tokens){
+      const best=hay.split(/\s+/).map(x=>fuzzyTokenScore(x,t)).reduce((a,b)=>Math.max(a,b),0);
+      score+=best*14;
+    }
+  }
+  return score;
+}
+async function runNativeOCR(nativePath){
+  if(!ocrPlugin||!nativePath)return '';
+  let tempName='';
+  let path=nativePath;
+  try{
+    // Gallery images can arrive as content:// URIs. ML Kit expects a local file path,
+    // so copy the image into the app cache first. Capacitor Filesystem supports full
+    // file:// paths and Android content:// files.
+    if(filesystemPlugin){
+      const raw=await filesystemPlugin.readFile({path:nativePath});
+      tempName=`curamed-ocr-${Date.now()}.jpg`;
+      await filesystemPlugin.writeFile({path:tempName,data:raw.data,directory:'CACHE'});
+      const uri=await filesystemPlugin.getUri({path:tempName,directory:'CACHE'});
+      path=uri.uri;
+    }
+    const paths=[path];
+    if(path.startsWith('file://')) paths.push(path.replace(/^file:\/\//,''));
+    let combined=[];
+    for(const candidate of paths){
+      for(const script of ['LATIN','DEVANAGARI']){
+        try{
+          const r=await ocrPlugin.processImage({path:candidate,script});
+          if(r?.text)combined.push(r.text);
+        }catch(e){console.warn('Native OCR attempt failed',script,candidate,e);}
+      }
+      if(combined.join('\n').trim())break;
+    }
+    return normalizeOCRText(combined.join('\n'));
+  }catch(e){
+    console.warn('Could not prepare image for native OCR',e);
+    return '';
+  }finally{
+    if(tempName&&filesystemPlugin){try{await filesystemPlugin.deleteFile({path:tempName,directory:'CACHE'});}catch(e){console.warn('OCR cache cleanup failed',e);}}
+  }
+}
+async function runTesseractOCR(src){
+  if(!window.Tesseract)throw new Error('Tesseract is unavailable');
+  let input=src;
+  try{input=await preprocessForOCR(src);}catch(e){console.warn('OCR preprocessing failed',e);}
+  const result=await Tesseract.recognize(input,'eng',{logger:m=>{if(m.status==='recognizing text')$('scan-status').textContent=`Reading label… ${Math.round((m.progress||0)*100)}%`;}});
+  return normalizeOCRText(result?.data?.text||'');
+}
+async function processScan(src, nativePath=''){
+  $('scan-preview').src=src;$('scan-preview-wrap').classList.remove('hidden');$('scan-empty').classList.add('hidden');
+  $('scan-status').innerHTML='<span class="material-symbols-outlined scan-spin inline-block align-middle">progress_activity</span> Reading medicine label…';
+  let text='',nativeWorked=false;
+  try{text=await runNativeOCR(nativePath);nativeWorked=!!text;}catch(e){console.warn('Native OCR failed',e);}
+  if(!text){
+    try{text=await runTesseractOCR(src);}catch(e){console.warn('Fallback OCR failed',e);}
+  }
+  currentScanText=text;$('ocr-text').value=text;$('ocr-text').classList.remove('hidden');matchScanText();
+  if(text){$('scan-status').textContent=nativeWorked?'Scan complete — on-device OCR detected text.':'Scan complete — enhanced OCR detected text.';}
+  else $('scan-status').textContent='Could not read the label. Move closer, use bright light, keep the name flat and try again.';
+  $('use-scan-text').classList.toggle('hidden',!text);
+}
+function matchScanText(){
+  const text=$('ocr-text').value.trim();currentScanText=text;
+  const rows=medicines.map(m=>({m,score:medicineOCRScore(m,text)})).filter(x=>x.score>=10).sort((a,b)=>b.score-a.score).slice(0,5).map(x=>x.m);
+  $('scan-matches').innerHTML=rows.length?'<p class="text-sm font-bold text-primary">Best matches from the local medicine library</p>'+rows.map(x=>`<button onclick="selectScanMedicine(${x.id})" class="flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-left ring-1 ring-slate-200"><span class="material-symbols-outlined text-primary">medication</span><span><b>${esc(x.medicine_name)}</b><small class="block text-outline">${esc(x.brand_name||'')} · ${esc(x.generic_name||'')}</small></span><span class="material-symbols-outlined ml-auto text-outline">info</span></button>`).join(''):'<div class="rounded-2xl bg-white p-3 text-sm text-on-surface-variant ring-1 ring-slate-200">Text was detected, but no medicine in the bundled library matched it. You can edit the detected text and search again.</div>';
+}
+$('ocr-text').oninput=matchScanText;
+window.selectScanMedicine=id=>{const x=medicines.find(m=>m.id===id);if(!x)return;closeModal(scanModal);openMedicineInfo(x)};
+$('use-scan-text').onclick=()=>{const text=$('ocr-text').value.trim().split(/\n/).find(x=>x.trim())||'';if(!text)return;$('r-medicine').value=text.slice(0,80);closeModal(scanModal);openReminderModal();showToast('Detected medicine name added to reminder form.')};
+async function takePhoto(){
+ if(cameraPlugin?.takePhoto){
+   try{
+     await cameraPlugin.requestPermissions?.({permissions:['camera','photos']});
+     const r=await cameraPlugin.takePhoto({quality:100,targetWidth:2200,targetHeight:2200,correctOrientation:true,saveToGallery:false});
+     const src=r?.webPath||(r?.thumbnail?`data:image/jpeg;base64,${r.thumbnail}`:'');
+     if(src)return processScan(src,r?.uri||'');
+     throw new Error('Camera returned no image');
+   }catch(e){console.warn(e);showToast('Camera could not capture the image. Use Gallery or try again.');return;}
+ }
+ $('scan-file-input').click();
+}
+function resetScan(){$('scan-preview-wrap').classList.add('hidden');$('scan-empty').classList.remove('hidden');$('ocr-text').classList.add('hidden');$('use-scan-text').classList.add('hidden');$('scan-matches').innerHTML='';$('scan-status').textContent=(I18N[profile().language]||I18N.en).ready;$('scan-file-input').value='';currentScanText=''}
+function openScan(){openModal(scanModal);resetScan()}
+$('take-photo-btn').onclick=takePhoto;
+$('choose-photo-btn').onclick=async()=>{if(cameraPlugin?.chooseFromGallery){try{await cameraPlugin.requestPermissions?.({permissions:['photos']});const r=await cameraPlugin.chooseFromGallery({mediaType:'Photo',allowMultipleSelection:false,limit:1,quality:100});const item=r?.results?.[0];if(item){const src=item.webPath||(item.thumbnail?`data:image/jpeg;base64,${item.thumbnail}`:'');if(src)await processScan(src,item.uri||'');else throw new Error('Gallery returned no image');}}catch(e){console.warn(e);showToast('Could not read that image. Try another photo.')}}else $('scan-file-input').click()};
+$('scan-file-input').onchange=async e=>{const f=e.target.files?.[0];if(f)await processScan(URL.createObjectURL(f));e.target.value=''};
+$('close-scan').onclick=()=>closeModal(scanModal);scanModal.addEventListener('click',e=>{if(e.target===scanModal)closeModal(scanModal)});
+document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{const a=b.dataset.action;if(a==='reminder')openReminderModal();else if(a==='history')openHistoryModal();else if(a==='profile')openProfile();else if(a==='scan')openScan();else if(a==='search'){searchInput.focus();window.scrollTo({top:0,behavior:'smooth'})}else if(a==='drug-info'){openDrugLibrary()}});
+$('adherence-card').onclick=openHistoryModal;$('camera-search').onclick=openScan;
+async function init(){try{medicines=await fetch('medicines.json',{cache:'no-store'}).then(r=>r.json());if(!Array.isArray(medicines))medicines=[]}catch(e){console.warn('Medicine database failed to load',e);medicines=[];setTimeout(()=>showToast('Medicine library could not be loaded.'),800)}const p=profile();applyTheme();applyLanguage();renderHistoryStats();await setupNativeNotifications();await loadReminders();await rescheduleAll()}
+init();
+</script>
+</body>
+</html>
