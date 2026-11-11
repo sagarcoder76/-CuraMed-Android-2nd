@@ -168,3 +168,15 @@ A generated copy lives in Google Slides, built directly against this spec:
   coloured result/ask bar, footer with tagline and slide number
 - Slide 5 carries a 4-step chevron pipeline (Code → GitHub Actions → APK → Install)
 - Speaker notes on every slide, starting with "SAY THIS:" — one line of delivery coaching each
+- Phone mockup of the home screen on slides 1 and 4; APK QR code + "scan to install"
+  caption on slide 7
+
+### Deck artwork (in this repo, so the public raw URLs can be embedded)
+
+| File | Used on | What it is |
+|---|---|---|
+| `docs/deck-assets/home-mockup.png` | slides 1, 4 | Phone mockup rendered from SVG with the real brand type (Plus Jakarta Sans / Inter): crimson Medicine suggestion hero, Hinglish chips, search, next dose, quick actions, adherence ring, buy links, emergency banner |
+| `docs/deck-assets/apk-qr.png` | slide 7 | QR to the green Actions run that produced `Medsathi-debug-apk` |
+
+Regenerate with the layout helpers in `/tmp/deck/mock.js` (resvg + qrcode); the QR
+target is a single string, so swapping it to a release URL is a one-line change.
