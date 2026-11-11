@@ -112,6 +112,32 @@
       </div>
     </section>
 
+    <!-- HERO: medicine suggestion (symptom → medicine) -->
+    <section class="mb-4 overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-[#E0446A] via-[#C62A52] to-[#79102F] p-4 shadow-fab">
+      <div class="flex items-start gap-3">
+        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/20 text-white">
+          <span class="material-symbols-outlined fill-icon text-[26px]">stethoscope</span>
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2">
+            <span class="rounded-full bg-white/25 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white">New</span>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-white/80">Medicine suggestion</span>
+          </div>
+          <h2 class="mt-1 font-display text-lg font-extrabold leading-snug text-white">Tell us your symptom — we&rsquo;ll suggest what may help</h2>
+          <p class="mt-0.5 text-xs leading-5 text-white/85">Type or speak in Hindi, Hinglish or English. Includes buy links and when to see a doctor.</p>
+        </div>
+      </div>
+      <div class="mt-3 flex gap-2">
+        <button id="symptom-open" class="flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-white font-display text-sm font-extrabold text-[#C62A52] shadow-sm transition active:scale-[.98]">
+          <span class="material-symbols-outlined text-[20px]">search_check</span>Check my symptom
+        </button>
+        <button id="symptom-voice" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/20 text-white transition active:scale-95" aria-label="Describe your symptom by voice">
+          <span class="material-symbols-outlined text-[22px]">mic</span>
+        </button>
+      </div>
+      <div id="symptom-quick" class="mt-2.5 flex gap-1.5 overflow-x-auto pb-0.5"></div>
+    </section>
+
     <!-- Primary action: search -->
     <section class="mb-4">
       <label for="medicine-search" class="sr-only">Search medicines</label>
@@ -124,16 +150,6 @@
       </div>
       <div id="search-results" class="relative z-30 mt-2 hidden max-h-[70vh] overflow-auto rounded-2xl bg-white shadow-card ring-1 ring-slate-200/70"></div>
     </section>
-
-    <!-- Symptom checker entry -->
-    <button id="symptom-open" class="mb-5 flex w-full items-center gap-3 rounded-3xl bg-gradient-to-br from-[#0A7285] to-[#05414F] p-4 text-left shadow-card transition active:scale-[.99]">
-      <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-white"><span class="material-symbols-outlined fill-icon text-[26px]">stethoscope</span></span>
-      <span class="min-w-0 flex-1">
-        <span class="block font-display text-base font-bold text-white">Not sure what to take?</span>
-        <span class="block text-xs text-white/80">Describe your symptom by voice or text — Hindi, Hinglish or English</span>
-      </span>
-      <span class="material-symbols-outlined shrink-0 text-white/80">chevron_right</span>
-    </button>
 
     <!-- Next dose -->
     <section class="mb-5 overflow-hidden rounded-3xl bg-surface-card shadow-card ring-1 ring-slate-100">
@@ -224,9 +240,9 @@
         <span class="flex h-8 w-14 items-center justify-center rounded-full bg-secondary-light"><span class="material-symbols-outlined fill-icon text-[22px]">home</span></span>
         <span class="text-[11px] font-bold">Home</span>
       </a>
-      <button data-action="history" class="flex h-full flex-col items-center justify-center gap-0.5 text-on-surface-variant active:scale-95">
-        <span class="flex h-8 w-14 items-center justify-center rounded-full"><span class="material-symbols-outlined text-[22px]">calendar_month</span></span>
-        <span class="text-[11px] font-bold">History</span>
+      <button data-action="check" class="flex h-full flex-col items-center justify-center gap-0.5 text-[#C62A52] active:scale-95">
+        <span class="flex h-8 w-14 items-center justify-center rounded-full bg-[#FDE7ED]"><span class="material-symbols-outlined fill-icon text-[22px]">stethoscope</span></span>
+        <span class="text-[11px] font-bold">Check</span>
       </button>
       <button data-action="scan" class="-mt-6 flex flex-col items-center justify-center gap-1 active:scale-95" aria-label="Scan a medicine">
         <span class="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-fab"><span class="material-symbols-outlined fill-icon text-[26px]">document_scanner</span></span>
@@ -676,6 +692,19 @@ function openSymptom(){
 }
 function closeSymptom(){const m=$('symptom-modal');if(m)closeModal(m);if(recorder&&recorder.state==='recording')recorder.stop()}
 $('symptom-open').onclick=openSymptom;
+$('symptom-voice').onclick=()=>{openSymptom();setTimeout(()=>startVoice(),320)};
+function renderHomeSymptomChips(){
+ const box=$('symptom-quick');if(!box||box.dataset.ready)return;
+ const items=SYMPTOM_CHIPS.slice(0,5);
+ box.innerHTML=items.map(c=>`<button data-qsym="${esc(c)}" class="shrink-0 rounded-full bg-white/20 px-3 py-1.5 text-[11px] font-bold text-white active:scale-95">${esc(c)}</button>`).join('');
+ box.dataset.ready='1';
+ box.querySelectorAll('[data-qsym]').forEach(b=>b.onclick=e=>{e.stopPropagation();quickSymptom(b.dataset.qsym)});
+}
+function quickSymptom(text){
+ openSymptom();
+ const input=$('symptom-input');if(!input)return;
+ input.value=text;runSymptomCheck();
+}
 $('close-symptom').onclick=closeSymptom;
 $('symptom-modal').addEventListener('click',e=>{if(e.target===$('symptom-modal'))closeSymptom()});
 $('symptom-check').onclick=runSymptomCheck;
@@ -1063,10 +1092,11 @@ $('take-photo-btn').onclick=takePhoto;
 $('choose-photo-btn').onclick=async()=>{if(cameraPlugin?.chooseFromGallery){try{await cameraPlugin.requestPermissions?.({permissions:['photos']});const r=await cameraPlugin.chooseFromGallery({mediaType:'Photo',allowMultipleSelection:false,limit:1,quality:100});const item=r?.results?.[0];if(item){const src=item.webPath||(item.thumbnail?`data:image/jpeg;base64,${item.thumbnail}`:'');if(src)await processScan(src,item.uri||'');else throw new Error('Gallery returned no image');}}catch(e){console.warn(e);showToast('Could not read that image. Try another photo.')}}else $('scan-file-input').click()};
 $('scan-file-input').onchange=async e=>{const f=e.target.files?.[0];if(f)await processScan(URL.createObjectURL(f));e.target.value=''};
 $('close-scan').onclick=()=>closeModal(scanModal);scanModal.addEventListener('click',e=>{if(e.target===scanModal)closeModal(scanModal)});
-document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{const a=b.dataset.action;if(a==='reminder')openReminderModal();else if(a==='history')openHistoryModal();else if(a==='profile')openProfile();else if(a==='scan')openScan();else if(a==='search'){searchInput.focus();window.scrollTo({top:0,behavior:'smooth'})}else if(a==='drug-info'){openDrugLibrary()}});
+document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{const a=b.dataset.action;if(a==='reminder')openReminderModal();else if(a==='history')openHistoryModal();else if(a==='check')openSymptom();else if(a==='profile')openProfile();else if(a==='scan')openScan();else if(a==='search'){searchInput.focus();window.scrollTo({top:0,behavior:'smooth'})}else if(a==='drug-info'){openDrugLibrary()}});
 $('adherence-card').onclick=openHistoryModal;$('camera-search').onclick=openScan;
+function ensureSymptomChips(){try{renderHomeSymptomChips()}catch(e){}}
 async function loadSymptoms(){try{SYMPTOM_DB=await fetch('symptoms.json',{cache:'no-store'}).then(r=>r.json())}catch(e){console.warn('Symptom data failed to load',e);SYMPTOM_DB=null}}
-async function init(){seedApiKeys();updateApiUi();loadSymptoms();try{medicines=await fetch('medicines.json',{cache:'no-store'}).then(r=>r.json());if(!Array.isArray(medicines))medicines=[]}catch(e){console.warn('Medicine database failed to load',e);medicines=[];setTimeout(()=>showToast('Medicine library could not be loaded.'),800)}const p=profile();applyTheme();applyLanguage();renderHistoryStats();renderHome();await setupNativeNotifications();await loadReminders();renderHome();await rescheduleAll()}
+async function init(){seedApiKeys();updateApiUi();ensureSymptomChips();loadSymptoms();try{medicines=await fetch('medicines.json',{cache:'no-store'}).then(r=>r.json());if(!Array.isArray(medicines))medicines=[]}catch(e){console.warn('Medicine database failed to load',e);medicines=[];setTimeout(()=>showToast('Medicine library could not be loaded.'),800)}const p=profile();applyTheme();applyLanguage();renderHistoryStats();renderHome();await setupNativeNotifications();await loadReminders();renderHome();await rescheduleAll()}
 init();
 </script>
 </body>

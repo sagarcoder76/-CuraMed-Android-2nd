@@ -168,9 +168,14 @@ file. Anything in the APK or repo is extractable. Use the Settings screen,
 
 ## Symptom checker (text + voice, Hindi / Hinglish / English)
 
-"Not sure what to take?" on the home screen opens the symptom checker. The patient
-can **type or speak** — "sar dard aur halka bukhar 2 din se, kya lu?" — and gets
-plain-language guidance plus buy links.
+The symptom checker is the app's headline feature and sits as the **crimson hero
+card at the top of the home screen**, plus a permanent **Check** tab in the bottom
+navigation. One-tap Hinglish starter chips (Bukhar, Sar dard, Khansi…) and a
+dedicated mic button open it straight into voice capture, so a patient can get an
+answer in two taps without typing.
+
+The patient can **type or speak** — "sar dard aur halka bukhar 2 din se, kya lu?" —
+and gets plain-language guidance plus buy links.
 
 **How it works**
 
