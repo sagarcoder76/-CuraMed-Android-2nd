@@ -30,6 +30,17 @@ The app is now **Medsathi — all info in one app**.
   `curamed.profile.v2`, `curamed.api.v2`) were intentionally **not** renamed so
   nothing breaks for anyone upgrading in place.
 
+## Brand
+
+- **Logo:** white heart with an ECG pulse on a crimson squircle gradient
+  (`www/logo.svg`). Used for the header mark, the favicon and every launcher icon.
+- **Launcher icons:** `resources/android/` holds the generated set (legacy,
+  round and adaptive foregrounds per density, plus a 1024px master).
+  `scripts/apply_icons.py` copies them over Capacitor's placeholders and sets
+  the adaptive background to `#C62A52`; it runs in the APK workflow.
+- **App palette:** the UI stays teal (`#005264` primary) for calm, readable
+  medical screens — the crimson mark is the brand accent.
+
 ## Build with GitHub Actions
 
 Push the project to GitHub. The workflow at `.github/workflows/build-apk.yml` will:

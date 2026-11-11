@@ -16,7 +16,7 @@ SRC = ROOT / "resources" / "android"
 RES = ROOT / "android" / "app" / "src" / "main" / "res"
 
 DENSITIES = ["mdpi", "hdpi", "xhdpi", "xxhdpi", "xxxhdpi"]
-BACKGROUND = "#0A7285"
+BACKGROUND = "#C62A52"
 
 
 def main() -> int:
