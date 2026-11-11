@@ -334,6 +334,7 @@
 
   <div id="toast" role="status" aria-live="polite" class="pointer-events-none fixed left-1/2 top-20 z-[60] w-max max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-4 rounded-full bg-[#2a3235] px-4 py-3 text-center text-sm font-semibold text-white opacity-0 shadow-lg transition-all duration-300"></div>
 
+  <script src="config.js" onerror="window.CURAMED_CONFIG=null"></script>
   <script>
 const $=id=>document.getElementById(id);
 const toast=$('toast');let toastTimer;
@@ -417,26 +418,40 @@ const GEMINI_BASE='https://generativelanguage.googleapis.com/v1beta/models/gemin
 const TINYFISH_SEARCH='https://api.search.tinyfish.ai';
 const KEY_NAMES={tinyfish:'TinyFish',openfda:'OpenFDA',gemini:'AI Studio'};
 function apiKeys(){const r=readJson(API_KEY_STORE,{})||{};return{tinyfish:(r.tinyfish||'').trim(),openfda:(r.openfda||'').trim(),gemini:(r.gemini||'').trim()};}
-function saveApiKeys(k){localStorage.setItem(API_KEY_STORE,JSON.stringify({tinyfish:(k.tinyfish||'').trim(),openfda:(k.openfda||'').trim(),gemini:(k.gemini||'').trim()}));}
+function saveApiKeys(k,extra){localStorage.setItem(API_KEY_STORE,JSON.stringify(Object.assign({tinyfish:(k.tinyfish||'').trim(),openfda:(k.openfda||'').trim(),gemini:(k.gemini||'').trim()},extra||{})));}
+/* Keys compiled into the app build (www/config.js) so a fresh install works
+   without typing anything. Saved once per install; user edits win afterwards. */
+function backendUrl(){try{return ((window.CURAMED_CONFIG||{}).backendUrl||'').replace(/\/$/,'')}catch(e){return ''}}
+function builtInKeys(){try{const k=(window.CURAMED_CONFIG||{}).apiKeys||{};return{tinyfish:(k.tinyfish||'').trim(),openfda:(k.openfda||'').trim(),gemini:(k.gemini||'').trim()}}catch(e){return{tinyfish:'',openfda:'',gemini:''}}}
+function seedApiKeys(){
+ if(localStorage.getItem(API_KEY_STORE)!==null)return;           // already saved or cleared
+ const b=builtInKeys();
+ if(!(b.tinyfish||b.openfda||b.gemini))return;                   // nothing compiled in
+ saveApiKeys(b,{builtin:true});
+}
 function activeKeyNames(){const k=apiKeys();return['tinyfish','openfda','gemini'].filter(n=>k[n]);}
-function liveEnabled(){return activeKeyNames().length>0;}
+function liveEnabled(){return activeKeyNames().length>0||!!backendUrl();}
 function geminiEnabled(){return!!apiKeys().gemini;}
 function mask(k){return k.length>8?`${k.slice(0,4)}••••${k.slice(-4)}`:'set';}
 function updateApiUi(){
  const k=apiKeys(),badge=$('api-status-badge'),txt=$('api-status-text');
  if(!badge||!txt)return;
  const set=activeKeyNames();
- badge.textContent=set.length?`${set.length} key${set.length>1?'s':''} active`:'Local only';
- badge.className='rounded-full px-2 py-1 text-xs font-bold '+(set.length?'bg-secondary-light text-secondary':'bg-surface-high text-outline');
+ const viaServer=!!backendUrl();
+ badge.textContent=viaServer?'Server API':(set.length?`${set.length} key${set.length>1?'s':''} active`:'Local only');
+ badge.className='rounded-full px-2 py-1 text-xs font-bold '+(liveEnabled()?'bg-secondary-light text-secondary':'bg-surface-high text-outline');
  ['tinyfish','openfda','gemini'].forEach(n=>{
   const input=$('key-'+n);if(input)input.value=k[n]||'';
   const pill=$('key-status-'+n);if(!pill)return;
   if(k[n]){pill.textContent='✓ Set';pill.className='rounded-full bg-secondary-light px-2 py-0.5 text-[10px] font-bold text-secondary';}
   else{pill.textContent='Not set';pill.className='rounded-full bg-surface-high px-2 py-0.5 text-[10px] font-bold text-outline';}
  });
+ const isBuiltin=!!(readJson(API_KEY_STORE,{})||{}).builtin;
  txt.textContent=set.length
   ?set.map(n=>`${KEY_NAMES[n]} ✓`).join(' · ')+` — saved on this device (${mask(k[set[0]])}). Live search + AI scan are on.`
   :'No keys saved. Search and scan use the on-device library only.';
+ if(set.length&&isBuiltin)txt.textContent+=' Built-in keys from the app build — you can replace them with your own.';
+ if(backendUrl())txt.textContent+=` Live data is served by ${backendUrl()} — no key needed on this device.`;
 }
 /* Cross-origin calls go through Capacitor's native HTTP inside the APK,
    which bypasses browser CORS; plain fetch is used in a browser preview. */
@@ -480,7 +495,16 @@ async function rxnavSearch(q){
  }catch(e){console.warn('RxNav failed',e);return[];}
 }
 async function liveSearch(q){
- if(!q||!liveEnabled())return[];
+ if(!q)return[];
+ const backend=backendUrl();
+ if(backend){
+  try{
+   const r=await apiRequest(`${backend}/api/external/search?q=${encodeURIComponent(q)}`,{headers:{'Accept':'application/json'}});
+   const list=(r&&r.data&&r.data.results)||[];
+   if(list.length)return list.slice(0,8).map(x=>({name:x.name||q,generic:x.generic||'',manufacturer:x.manufacturer||'',uses:x.uses||'',url:x.url||'',source:x.source||'Server'}));
+  }catch(e){console.warn('Backend proxy failed',e);}
+ }
+ if(!liveEnabled())return[];
  const k=apiKeys(),jobs=[];
  if(k.tinyfish)jobs.push(tinyfishSearch(q,k.tinyfish));
  jobs.push(openfdaSearch(q,k.openfda));
@@ -529,7 +553,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('api-status-text').textContent=`Test result — ${out.join(' · ')}`;
   showToast(ok?`${ok} key${ok>1?'s':''} working.`:'No key responded. Check keys or internet.');
  };
- $('api-clear-btn').onclick=()=>{localStorage.removeItem(API_KEY_STORE);updateApiUi();refreshSearchIfQuerying();showToast('All API keys removed.');};
+ $('api-clear-btn').onclick=()=>{saveApiKeys({tinyfish:'',openfda:'',gemini:''},{cleared:true});updateApiUi();refreshSearchIfQuerying();showToast('All API keys removed.');};
 });
 searchInput.oninput=()=>{clearTimeout(searchTimer);const q=searchInput.value.trim();if(!q){searchResults.classList.add('hidden');return}searchTimer=setTimeout(()=>renderSearchResults(q),80)};
 window.showMedicine=id=>{const x=medicines.find(m=>m.id===id);if(!x)return;searchResults.classList.add('hidden');openMedicineInfo(x)};
@@ -673,10 +697,18 @@ function imageToBase64(src,max=1400){
  });
 }
 async function runGeminiScan(src){
- if(!geminiEnabled())return '';
+ const backend=backendUrl();
+ if(!backend&&!geminiEnabled())return '';
  const key=apiKeys().gemini;
  $('scan-status').textContent='Reading label with AI…';
  const data=await imageToBase64(src);
+ if(backend){
+  try{
+   const r=await apiRequest(`${backend}/api/external/scan`,{method:'POST',headers:{'Content-Type':'application/json'},body:{image_base64:data,mime:'image/jpeg'}});
+   const t=normalizeOCRText((r&&r.data&&r.data.text)||'');
+   if(t)return t;
+  }catch(e){console.warn('Backend scan failed',e);}
+ }
  try{
   const resp=await apiRequest(`${GEMINI_BASE}?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},
    body:{contents:[{parts:[
@@ -690,7 +722,7 @@ async function processScan(src, nativePath=''){
   $('scan-preview').src=src;$('scan-preview-wrap').classList.remove('hidden');$('scan-empty').classList.add('hidden');
   $('scan-status').innerHTML='<span class="material-symbols-outlined scan-spin inline-block align-middle">progress_activity</span> Reading medicine label…';
   let text='',nativeWorked=false,aiWorked=false;
-  if(geminiEnabled()){
+  if(geminiEnabled()||backendUrl()){
     try{text=await runGeminiScan(src);aiWorked=!!text;}catch(e){console.warn('AI scan failed',e);}
   }
   if(!text){
@@ -742,7 +774,7 @@ $('scan-file-input').onchange=async e=>{const f=e.target.files?.[0];if(f)await p
 $('close-scan').onclick=()=>closeModal(scanModal);scanModal.addEventListener('click',e=>{if(e.target===scanModal)closeModal(scanModal)});
 document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{const a=b.dataset.action;if(a==='reminder')openReminderModal();else if(a==='history')openHistoryModal();else if(a==='profile')openProfile();else if(a==='scan')openScan();else if(a==='search'){searchInput.focus();window.scrollTo({top:0,behavior:'smooth'})}else if(a==='drug-info'){openDrugLibrary()}});
 $('adherence-card').onclick=openHistoryModal;$('camera-search').onclick=openScan;
-async function init(){try{medicines=await fetch('medicines.json',{cache:'no-store'}).then(r=>r.json());if(!Array.isArray(medicines))medicines=[]}catch(e){console.warn('Medicine database failed to load',e);medicines=[];setTimeout(()=>showToast('Medicine library could not be loaded.'),800)}const p=profile();applyTheme();applyLanguage();renderHistoryStats();await setupNativeNotifications();await loadReminders();await rescheduleAll()}
+async function init(){seedApiKeys();updateApiUi();try{medicines=await fetch('medicines.json',{cache:'no-store'}).then(r=>r.json());if(!Array.isArray(medicines))medicines=[]}catch(e){console.warn('Medicine database failed to load',e);medicines=[];setTimeout(()=>showToast('Medicine library could not be loaded.'),800)}const p=profile();applyTheme();applyLanguage();renderHistoryStats();await setupNativeNotifications();await loadReminders();await rescheduleAll()}
 init();
 </script>
 </body>

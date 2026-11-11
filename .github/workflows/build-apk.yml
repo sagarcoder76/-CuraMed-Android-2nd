@@ -34,6 +34,30 @@ jobs:
       - name: Install npm dependencies
         run: npm install
 
+      # Bakes the keys into www/config.js (git-ignored) so the downloaded APK
+      # works with no setup. Set them once in Settings -> Secrets and variables
+      # -> Actions. Missing secrets simply build an app without built-in keys.
+      - name: Inject API keys into app build
+        env:
+          TF_KEY: ${{ secrets.TINYFISH_API_KEY }}
+          OF_KEY: ${{ secrets.OPENFDA_API_KEY }}
+          GM_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          node -e '
+          const fs = require("fs");
+          const keys = {
+            tinyfish: process.env.TF_KEY || "",
+            openfda: process.env.OF_KEY || "",
+            gemini: process.env.GM_KEY || ""
+          };
+          if (Object.values(keys).some(Boolean)) {
+            fs.writeFileSync("www/config.js", "window.CURAMED_CONFIG = " + JSON.stringify({apiKeys: keys}, null, 2) + ";\n");
+            console.log("Injected built-in keys:", Object.keys(keys).filter(k => keys[k]).join(", "));
+          } else {
+            console.log("No API key secrets set - building without built-in keys.");
+          }
+          '
+
       - name: Add Android platform
         run: npx cap add android
 

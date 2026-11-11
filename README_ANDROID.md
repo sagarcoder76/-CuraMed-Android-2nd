@@ -88,10 +88,60 @@ python3 app.py
 Set `TINYFISH_API_KEY` in `.env` to have `/api/external/search` also return
 TinyFish web results (`X-API-Key` header, `GET https://api.search.tinyfish.ai`).
 
+### 3. Shipping the app with keys already inside (zero-setup install)
+
+If you want someone to download the APK and use it immediately — no key entry —
+there are two ways. Pick by how public the app will be.
+
+**Option A — keys compiled into the build (fastest, least safe)**
+
+The app reads `www/config.js` at startup. If no keys are saved on the device yet,
+it copies those keys in once, so a fresh install works instantly. The file is
+git-ignored, so real keys never land in the repository.
+
+Local build:
+```bash
+cp www/config.example.js www/config.js   # then paste your three keys
+npx cap copy android && npx cap sync android
+```
+
+GitHub Actions build (no key in the repo — recommended version of Option A):
+1. Repo → **Settings → Secrets and variables → Actions → New repository secret**.
+2. Add `TINYFISH_API_KEY`, `OPENFDA_API_KEY`, `GEMINI_API_KEY`.
+3. Run the **Build CuraMed APK** workflow. The step *"Inject API keys into app
+   build"* writes `www/config.js` from those secrets before Capacitor copies the
+   web assets, so the APK is self-contained. With no secrets set it simply builds
+   an app without built-in keys.
+
+The user can still replace the keys in Settings; a built-in key is only seeded
+once per install, and **Clear** stays cleared.
+
+> ⚠️ **Any key inside an APK is extractable.** Someone can unzip the APK, run
+> `strings` on it, or read `config.js` directly — treat shipped keys as public.
+> Use free tiers, rotate them if usage spikes, and never ship a paid/billing key.
+> This is why Option A is fine for a personal or small-group APK, not for a
+> store-wide release.
+
+**Option B — backend proxy (recommended for public distribution)**
+
+Keys stay on a server; the APK only knows a URL.
+
+1. Deploy `medicine_assistant/` (any host that runs Python — Vercel/Fly/Render/a VPS).
+2. Set `TINYFISH_API_KEY`, `OPENFDA_API_KEY`, `GEMINI_API_KEY` in that host's env
+   (or its `.env`).
+3. In `www/config.js` set only the URL, and leave `apiKeys` empty:
+   ```js
+   window.CURAMED_CONFIG = { backendUrl: 'https://your-api.example.com', apiKeys: { tinyfish:'', openfda:'', gemini:'' } };
+   ```
+4. Rebuild. The app now calls `/api/external/search` and `/api/external/scan` on
+   your server; the status badge shows **Server API**, and no key is present on
+   the phone. Because the same URL ships in every APK, you can rotate keys
+   server-side without shipping a new build.
+
 ### Never do this
 Do **not** paste a real key into `www/index.html`, `app.py`, or any committed
-file. Anything in the APK or repo is extractable. Use the Settings screen or
-`.env`.
+file. Anything in the APK or repo is extractable. Use the Settings screen,
+`www/config.js` (git-ignored, injected by CI), or `.env`.
 
 ## Medicine search and scan
 The Android build includes Capacitor Camera 8.2.4 and ML Kit Text Recognition 8.2.0. Search opens a full medicine information card showing uses, administration, common side effects, important precautions, interactions, storage and the bundled data source. Scan captures a label and runs on-device OCR when the native plugin is available, then fuzzy-matches the detected text against `www/medicines.json`. The bundled records remain demo/unverified data.
