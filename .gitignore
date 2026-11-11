@@ -1,0 +1,11 @@
+# CuraMed secrets — NEVER commit real keys
+.env
+.env.*
+!.env.example
+www/config.js
+*.key
+*.pem
+
+# Python
+__pycache__/
+*.pyc

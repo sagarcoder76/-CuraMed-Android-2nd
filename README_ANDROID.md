@@ -35,6 +35,51 @@ The bundled medicine records are demo/unverified records from the original proje
 OCR uses Tesseract.js loaded from a CDN, so first-time scanning needs internet access. Camera capture itself is native Android.
 
 
+## Optional API keys (live medicine search & AI scan)
+
+CuraMed works fully offline with **no key**. Adding a key is optional and only
+turns on *live* data. The key is **never hardcoded in the app source**.
+
+### 1. In the Android app (recommended for the APK)
+Profile & Settings → **Live medicine API (optional)**:
+1. Pick a **Provider**.
+2. Paste the key.
+3. Tap **Save key**, then **Test** (it should report live results for "paracetamol").
+
+| Provider | Key needed? | What it gives you |
+|---|---|---|
+| Off — local library only | — | 6 bundled demo medicines, fully offline |
+| RxNav (NLM) | No | Live US drug-name lookup, free |
+| OpenFDA | Optional | Live brand/generic names, uses, manufacturer. A key only raises rate limits |
+| Google Gemini | **Yes** | AI reads the label photo during Scan (better on blurry/angled packs) |
+
+The key is stored in the WebView's `localStorage` on that device only. It is not
+baked into the APK, so a leaked APK does not leak the key. If a device is shared,
+tap **Clear** to remove it.
+
+Get keys: OpenFDA — https://open.fda.gov/apis/authentication/ ·
+Gemini — https://aistudio.google.com/apikey
+
+### 2. In the Python backend (server-side proxy)
+Safest option: the key never reaches the phone.
+
+```bash
+cd medicine_assistant
+cp .env.example .env      # then edit .env and paste keys
+python3 app.py
+```
+
+`.env` is git-ignored. New endpoints:
+
+- `GET  /api/external/search?q=paracetamol` → live RxNav + OpenFDA results
+- `POST /api/external/scan` with `{"image_base64": "..."}` → AI-read label text
+- `GET  /api/config/status` → which providers are configured (never returns keys)
+
+### Never do this
+Do **not** paste a real key into `www/index.html`, `app.py`, or any committed
+file. Anything in the APK or repo is extractable. Use the Settings screen or
+`.env`.
+
 ## Medicine search and scan
 The Android build includes Capacitor Camera 8.2.4 and ML Kit Text Recognition 8.2.0. Search opens a full medicine information card showing uses, administration, common side effects, important precautions, interactions, storage and the bundled data source. Scan captures a label and runs on-device OCR when the native plugin is available, then fuzzy-matches the detected text against `www/medicines.json`. The bundled records remain demo/unverified data.
 
