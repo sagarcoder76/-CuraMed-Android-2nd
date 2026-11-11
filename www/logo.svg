@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Medsathi logo">
+  <defs>
+    <linearGradient id="ms-bg" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#F0688A"/>
+      <stop offset="0.55" stop-color="#D9315C"/>
+      <stop offset="1" stop-color="#7A1130"/>
+    </linearGradient>
+    <linearGradient id="ms-heart" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#FFE8EE"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="122" fill="url(#ms-bg)"/>
+  <path d="M256 412 C148 342 92 286 92 212 C92 152 138 112 194 112 C226 112 248 126 256 146 C264 126 286 112 318 112 C374 112 420 152 420 212 C420 286 364 342 256 412 Z" fill="url(#ms-heart)"/>
+  <path d="M126 252 H196 L220 200 L252 300 L278 220 L298 252 H386" fill="none" stroke="#C62A52" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

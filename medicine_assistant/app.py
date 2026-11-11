@@ -8,6 +8,8 @@ from datetime import datetime
 from database.database import get_connection, initialize_database, DB_PATH
 from database.seed_data import seed_demo_data
 from medicine.search import search_medicines
+from medicine.external_api import search_external, scan_with_gemini
+from config import api_status
 
 ROOT=Path(__file__).resolve().parent
 HTML=(ROOT/'templates'/'index.html').read_text(encoding='utf-8')
@@ -40,7 +42,12 @@ class Handler(BaseHTTPRequestHandler):
             if path=='/api/history': return send_json(self,[row(r) for r in conn.execute('SELECT d.*,r.medicine_name,r.dosage FROM dose_logs d JOIN reminders r ON r.id=d.reminder_id ORDER BY d.action_time DESC LIMIT 100')])
             if path=='/api/search':
                 q=parse_qs(u.query).get('q',[''])[0].strip(); results=search_medicines(conn,q) if q else []
-                return send_json(self,[{'id':m.medicine.id,'name':m.medicine.medicine_name,'generic':m.medicine.generic_name,'brand':m.medicine.brand_name,'strength':m.medicine.strength,'match_type':r.match_type} for r in results])
+                return send_json(self,[{'id':r.medicine.id,'name':r.medicine.medicine_name,'generic':r.medicine.generic_name,'brand':r.medicine.brand_name,'strength':r.medicine.strength,'match_type':r.match_type} for r in results])
+            if path=='/api/external/search':
+                q=parse_qs(u.query).get('q',[''])[0].strip()
+                return send_json(self,{'query':q,'results':search_external(q)})
+            if path=='/api/config/status':
+                return send_json(self,api_status())
             if path.startswith('/api/medicine/'):
                 mid=path.rsplit('/',1)[-1]; r=conn.execute('SELECT * FROM medicines WHERE id=?',(mid,)).fetchone()
                 return send_json(self,row(r) or {'error':'Medicine not found'},200 if r else 404)
@@ -59,6 +66,11 @@ class Handler(BaseHTTPRequestHandler):
                 if rep not in ('daily','weekdays','once'): rep='daily'
                 cur=conn.execute('INSERT INTO reminders(medicine_name,dosage,reminder_time,repeat_type,enabled,created_at) VALUES(?,?,?,?,1,?)',(med,dosage,t,rep,datetime.now().isoformat(timespec='seconds'))); conn.commit()
                 return send_json(self,row(conn.execute('SELECT * FROM reminders WHERE id=?',(cur.lastrowid,)).fetchone()),201)
+            if path=='/api/external/scan':
+                # Body: {"image_base64": "...", "mime": "image/jpeg"}
+                # Key stays server-side; returns {"text": ...} or {"text": null}
+                text=scan_with_gemini(str(data.get('image_base64','')), str(data.get('mime','image/jpeg')))
+                return send_json(self,{'text':text})
             if path.startswith('/api/reminders/') and path.endswith('/log'):
                 rid=path.split('/')[-2]; action=data.get('action','taken')
                 if action not in ('taken','skipped','snoozed'): return send_json(self,{'error':'Invalid action'},400)

@@ -1,9 +1,9 @@
-# Medicine Assistant — CuraMed Web UI
+# Medicine Assistant — Medsathi Web UI
 
-This version keeps the existing SQLite medicine database/search modules and adds a mobile-first CuraMed web interface plus persistent medicine reminders.
+This version keeps the existing SQLite medicine database/search modules and adds a mobile-first Medsathi web interface plus persistent medicine reminders.
 
 ## Features
-- CuraMed UI based on the supplied `index.html`
+- Medsathi UI based on the supplied `index.html`
 - Local medicine search using the existing database
 - Add daily, weekday, or one-time reminders
 - Enable/disable and delete reminders

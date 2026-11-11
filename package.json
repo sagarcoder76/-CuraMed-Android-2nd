@@ -1,8 +1,8 @@
 {
-  "name": "curamed-android",
+  "name": "medsathi-android",
   "version": "1.2.0",
   "private": true,
-  "description": "CuraMed Medicine Assistant Android app",
+  "description": "Medsathi - all medicine info in one app",
   "scripts": {
     "sync": "npx cap sync android",
     "android": "npx cap open android",

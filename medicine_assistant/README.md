@@ -75,4 +75,4 @@ official medicine references into the same `medicines` table
 `last_updated` columns truthful for every row.
 
 ## Web UI / Reminders
-Run `python3 app.py` to launch the new CuraMed mobile web interface. It includes persistent medicine reminders, dose logging, history, and local medicine search.
+Run `python3 app.py` to launch the new Medsathi mobile web interface. It includes persistent medicine reminders, dose logging, history, and local medicine search.

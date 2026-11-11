@@ -1,0 +1,545 @@
+{
+  "disclaimer": "Medsathi gives general information from public health guidance, not a diagnosis. It never replaces a doctor or pharmacist. For anyone pregnant, breastfeeding, under 12, elderly, or with a long-term illness, ask a professional before taking any medicine.",
+  "emergency": {
+    "message": "This can be an emergency. Go to a hospital or call 108 (ambulance) / 112 (emergency) right now. Do not wait for medicine.",
+    "keywords": [
+      "chest pain",
+      "seene me dard",
+      "sine mein dard",
+      "सीने में दर्द",
+      "chhati me dard",
+      "breathless",
+      "saans nahi",
+      "saans phool",
+      "सांस",
+      "dam ghut",
+      "difficulty breathing",
+      "unconscious",
+      "behosh",
+      "बेहोश",
+      "fainted",
+      "seizure",
+      "mirgi",
+      "मिर्गी",
+      "fits",
+      "stroke",
+      "paralysis",
+      "lakwa",
+      "लकवा",
+      "face droop",
+      "bolne me dikkat",
+      "severe bleeding",
+      "khoon nahi ruk",
+      "खून",
+      "suicide",
+      "jaan dena",
+      "atmahatya",
+      "poison",
+      "zeher",
+      "जहर",
+      "overdose",
+      "blue lips",
+      "hoth neele",
+      "stiff neck with fever",
+      "gardan akad"
+    ]
+  },
+  "conditions": [
+    {
+      "id": "fever",
+      "condition": "Fever · बुखार · Bukhar",
+      "keywords": [
+        "fever",
+        "bukhar",
+        "बुखार",
+        "बुख़ार",
+        "temperature",
+        "body hot",
+        "garam",
+        "ज्वर",
+        "100 degree",
+        "101",
+        "102"
+      ],
+      "advice": "Rest, drink water/ORS often, wear light clothes, and sponge with lukewarm water if very hot.",
+      "medicines": [
+        {
+          "name": "Paracetamol 500 mg",
+          "why": "Brings down fever and body ache",
+          "dose": "1 tablet after food, up to 3 times a day. Maximum 3 g in 24 hours.",
+          "otc": true
+        }
+      ],
+      "seeDoctorIf": "Fever above 39°C, lasting more than 3 days, with rash, stiff neck, fits, or in a baby under 3 months.",
+      "sources": [
+        "WHO fever advice",
+        "National Health Portal India"
+      ]
+    },
+    {
+      "id": "headache",
+      "condition": "Headache · सिरदर्द · Sar dard",
+      "keywords": [
+        "headache",
+        "sar dard",
+        "सिरदर्द",
+        "सरदर्द",
+        "sir dard",
+        "head pain",
+        "migraine",
+        "aadha sir"
+      ],
+      "advice": "Rest in a quiet dark room, drink water, eat on time, and limit screen time.",
+      "medicines": [
+        {
+          "name": "Paracetamol 500 mg",
+          "why": "First choice for ordinary headache",
+          "dose": "1 tablet up to 3 times a day after food.",
+          "otc": true
+        },
+        {
+          "name": "Ibuprofen 200 mg",
+          "why": "If paracetamol did not help",
+          "dose": "1 tablet after food, max 3 a day. Avoid if you have stomach ulcers or kidney problems.",
+          "otc": true
+        }
+      ],
+      "seeDoctorIf": "Sudden worst-ever headache, headache with fever and stiff neck, weakness in an arm or leg, slurred speech, or headache after a head injury.",
+      "sources": [
+        "WHO headache guidance"
+      ]
+    },
+    {
+      "id": "cold",
+      "condition": "Common cold · सर्दी-ज़ुकाम · Zukam",
+      "keywords": [
+        "cold",
+        "zukam",
+        "जुकाम",
+        "सर्दी",
+        "sardi",
+        "runny nose",
+        "naak bah",
+        "नाक बह",
+        "sneezing",
+        "chheenk",
+        "blocked nose",
+        "naak band"
+      ],
+      "advice": "Steam inhalation, warm fluids, saline (salt water) nose drops, and rest. A cold usually settles in 5–7 days without antibiotics.",
+      "medicines": [
+        {
+          "name": "Cetirizine 10 mg",
+          "why": "Reduces sneezing and runny nose",
+          "dose": "1 tablet at night. May cause drowsiness — do not drive.",
+          "otc": true
+        },
+        {
+          "name": "Sodium chloride nasal drops 0.65%",
+          "why": "Clears a blocked nose safely",
+          "dose": "2–3 drops in each nostril as needed.",
+          "otc": true
+        }
+      ],
+      "seeDoctorIf": "Symptoms last more than 10 days, high fever, ear pain, breathlessness, or noisy breathing.",
+      "sources": [
+        "NHS common cold",
+        "National Health Portal India"
+      ]
+    },
+    {
+      "id": "cough",
+      "condition": "Cough · खांसी · Khansi",
+      "keywords": [
+        "cough",
+        "khansi",
+        "खांसी",
+        "khaansi",
+        "dry cough",
+        "sukhi khansi",
+        "balgam",
+        "बलगम",
+        "phlegm",
+        "coughing"
+      ],
+      "advice": "Warm water with honey (if over 1 year old), steam, and avoid smoke and cold drinks.",
+      "medicines": [
+        {
+          "name": "Dextromethorphan cough syrup",
+          "why": "For a dry, tickly cough",
+          "dose": "As printed on the pack for your age. Not for children under 12.",
+          "otc": true
+        },
+        {
+          "name": "Guaifenesin 100 mg/5 ml syrup",
+          "why": "For a wet cough with phlegm",
+          "dose": "As printed on the pack. Drink plenty of water.",
+          "otc": true
+        }
+      ],
+      "seeDoctorIf": "Cough for more than 3 weeks, blood in phlegm, chest pain, breathlessness, unexplained weight loss, or a cough in a child under 2 months.",
+      "sources": [
+        "WHO cough and TB guidance"
+      ]
+    },
+    {
+      "id": "sore_throat",
+      "condition": "Sore throat · गले में खराश · Gala kharab",
+      "keywords": [
+        "sore throat",
+        "gala kharab",
+        "गला खराब",
+        "gale me dard",
+        "throat pain",
+        "gala dard",
+        "tonsil"
+      ],
+      "advice": "Warm salt-water gargles 3–4 times a day, warm fluids, and rest your voice. Most sore throats are viral.",
+      "medicines": [
+        {
+          "name": "Paracetamol 500 mg",
+          "why": "Relieves throat pain and fever",
+          "dose": "1 tablet up to 3 times a day.",
+          "otc": true
+        },
+        {
+          "name": "Benzydamine lozenges",
+          "why": "Numbs a painful throat",
+          "dose": "1 lozenge every 3 hours, max 6 a day.",
+          "otc": true
+        }
+      ],
+      "seeDoctorIf": "Difficulty swallowing or opening the mouth, drooling, one-sided severe swelling, or a rash with high fever.",
+      "sources": [
+        "NHS sore throat"
+      ]
+    },
+    {
+      "id": "acidity",
+      "condition": "Acidity / heartburn · एसिडिटी · Jalan",
+      "keywords": [
+        "acidity",
+        "acid reflux",
+        "jalan",
+        "जलन",
+        "heartburn",
+        "khatti dakaar",
+        "gaseous",
+        "gas",
+        "seene me jalan",
+        "khatta"
+      ],
+      "advice": "Eat smaller meals, avoid very spicy or fried food, do not lie down for 2 hours after eating, and raise the head of the bed.",
+      "medicines": [
+        {
+          "name": "Antacid (aluminium + magnesium hydroxide) suspension",
+          "why": "Neutralises acid quickly",
+          "dose": "10 ml after meals or when symptoms occur, up to 4 times a day.",
+          "otc": true
+        },
+        {
+          "name": "Omeprazole 20 mg",
+          "why": "Short-course acid reduction",
+          "dose": "1 capsule daily 30 minutes before breakfast, for up to 14 days. Ask a pharmacist first.",
+          "otc": true
+        }
+      ],
+      "seeDoctorIf": "Chest pain with sweating or breathlessness, difficulty swallowing, weight loss, vomiting blood, or black stools.",
+      "sources": [
+        "NICE dyspepsia guidance"
+      ]
+    },
+    {
+      "id": "diarrhoea",
+      "condition": "Loose motions · दस्त · Dast",
+      "keywords": [
+        "diarrhoea",
+        "diarrhea",
+        "dast",
+        "दस्त",
+        "loose motion",
+        "loose motions",
+        "potty",
+        "watery stool",
+        "pet kharab"
+      ],
+      "advice": "Drink ORS after every loose motion — this is the most important step. Keep eating light food and avoid outside food.",
+      "medicines": [
+        {
+          "name": "ORS (oral rehydration salts)",
+          "why": "Replaces the water and salts you lose",
+          "dose": "1 sachet in 1 litre of clean water. Sip after each motion. Discard after 24 hours.",
+          "otc": true
+        },
+        {
+          "name": "Zinc 20 mg dispersible tablet",
+          "why": "Shortens diarrhoea, especially for children",
+          "dose": "1 tablet daily for 14 days. For children as advised by a health worker.",
+          "otc": true
+        }
+      ],
+      "seeDoctorIf": "Blood or mucus in stool, high fever, vomiting everything, no urine for 8 hours, sunken eyes, or child looks very weak.",
+      "sources": [
+        "WHO diarrhoea guidance"
+      ]
+    },
+    {
+      "id": "constipation",
+      "condition": "Constipation · कब्ज़ · Kabz",
+      "keywords": [
+        "constipation",
+        "kabz",
+        "कब्ज",
+        "कब्ज़",
+        "hard stool",
+        "no motion",
+        "pet saaf nahi"
+      ],
+      "advice": "Drink 2–3 litres of water, eat fruit and fibre (papaya, isabgol), walk daily, and do not strain.",
+      "medicines": [
+        {
+          "name": "Psyllium husk (isabgol)",
+          "why": "Fibre that softens stool",
+          "dose": "1–2 teaspoons in warm water at night. Drink extra water.",
+          "otc": true
+        }
+      ],
+      "seeDoctorIf": "Blood in stool, severe abdominal pain, vomiting, or no motion with fever for more than a week.",
+      "sources": [
+        "NHS constipation"
+      ]
+    },
+    {
+      "id": "body_ache",
+      "condition": "Body / muscle ache · बदन दर्द · Badan dard",
+      "keywords": [
+        "body ache",
+        "badan dard",
+        "बदन दर्द",
+        "muscle pain",
+        "body pain",
+        "kamzori",
+        "weakness",
+        "thakan"
+      ],
+      "advice": "Rest, warm compress, gentle stretching, and enough water. Most body aches from viral illness settle in a few days.",
+      "medicines": [
+        {
+          "name": "Paracetamol 500 mg",
+          "why": "Pain and fever relief",
+          "dose": "1 tablet up to 3 times a day after food.",
+          "otc": true
+        },
+        {
+          "name": "Diclofenac 1% gel",
+          "why": "Local rub for a sore muscle",
+          "dose": "Apply a thin layer 2–3 times a day. Do not use on broken skin.",
+          "otc": true
+        }
+      ],
+      "seeDoctorIf": "Pain for more than 2 weeks, swelling or redness of a joint, fever with severe muscle pain, or dark urine.",
+      "sources": [
+        "NHS muscle pain"
+      ]
+    },
+    {
+      "id": "allergy",
+      "condition": "Allergy / itching · एलर्जी · Khujli",
+      "keywords": [
+        "allergy",
+        "allergic",
+        "khujli",
+        "खुजली",
+        "itching",
+        "rash",
+        "daane",
+        "दाने",
+        "hives",
+        "chhale",
+        "sneezing in dust"
+      ],
+      "advice": "Avoid the trigger (dust, a new soap, a food), keep the skin cool, and do not scratch.",
+      "medicines": [
+        {
+          "name": "Cetirizine 10 mg",
+          "why": "Anti-allergy tablet for itching and hives",
+          "dose": "1 tablet at night. Causes drowsiness.",
+          "otc": true
+        },
+        {
+          "name": "Calamine lotion",
+          "why": "Soothes itchy skin",
+          "dose": "Apply on affected skin 2–3 times a day.",
+          "otc": true
+        }
+      ],
+      "seeDoctorIf": "Swelling of the lips, tongue or throat, difficulty breathing, dizziness or fainting — this is anaphylaxis, treat as an emergency.",
+      "sources": [
+        "NHS allergies"
+      ]
+    },
+    {
+      "id": "menstrual_pain",
+      "condition": "Period pain · पीरियड दर्द · Period dard",
+      "keywords": [
+        "period pain",
+        "periods",
+        "menstrual",
+        "मासिक धर्म",
+        "periods pain",
+        "pet me dard periods",
+        "cramps"
+      ],
+      "advice": "A hot water bag on the lower abdomen, gentle movement, and rest help most cramps.",
+      "medicines": [
+        {
+          "name": "Ibuprofen 200 mg",
+          "why": "Relieves cramping pain",
+          "dose": "1 tablet after food, up to 3 times a day during pain. Avoid with stomach ulcers.",
+          "otc": true
+        },
+        {
+          "name": "Paracetamol 500 mg",
+          "why": "Alternative if ibuprofen upsets your stomach",
+          "dose": "1 tablet up to 3 times a day after food.",
+          "otc": true
+        }
+      ],
+      "seeDoctorIf": "Pain so severe it stops you working, very heavy bleeding, bleeding between periods, or pain with fever.",
+      "sources": [
+        "WHO women's health"
+      ]
+    },
+    {
+      "id": "vomiting",
+      "condition": "Vomiting / nausea · उल्टी · Ulti",
+      "keywords": [
+        "vomiting",
+        "ulti",
+        "उल्टी",
+        "nausea",
+        "ji michlana",
+        "जी मिचलाना",
+        "throwing up",
+        "pet kharab ulti"
+      ],
+      "advice": "Take small sips of ORS every 5–10 minutes, avoid oily food, and rest.",
+      "medicines": [
+        {
+          "name": "ORS (oral rehydration salts)",
+          "why": "Prevents dehydration",
+          "dose": "Sip slowly and often. Same 1 litre recipe as for loose motions.",
+          "otc": true
+        },
+        {
+          "name": "Ondansetron 4 mg",
+          "why": "Only for moderate vomiting, ask a pharmacist",
+          "dose": "As advised by a pharmacist or doctor.",
+          "otc": false
+        }
+      ],
+      "seeDoctorIf": "You cannot keep any fluid down, there is blood, severe abdominal pain, a headache with a stiff neck, or you are pregnant.",
+      "sources": [
+        "WHO dehydration guidance"
+      ]
+    },
+    {
+      "id": "sprain",
+      "condition": "Sprain / injury · मोच · Moch",
+      "keywords": [
+        "sprain",
+        "moch",
+        "मोच",
+        "twisted ankle",
+        "ankle pain",
+        "chot",
+        "चोट",
+        "injury",
+        "swelling"
+      ],
+      "advice": "Follow RICE — Rest, Ice for 15 minutes (wrapped in cloth), Compression bandage, Elevation.",
+      "medicines": [
+        {
+          "name": "Paracetamol 500 mg",
+          "why": "Pain relief",
+          "dose": "1 tablet up to 3 times a day after food.",
+          "otc": true
+        },
+        {
+          "name": "Diclofenac 1% gel",
+          "why": "Reduces pain and swelling locally",
+          "dose": "Apply 2–3 times a day on intact skin only.",
+          "otc": true
+        }
+      ],
+      "seeDoctorIf": "You cannot put weight on the joint, the bone looks deformed, numbness, or no improvement after 3 days.",
+      "sources": [
+        "NHS sprains and strains"
+      ]
+    },
+    {
+      "id": "toothache",
+      "condition": "Toothache · दांत दर्द · Daant dard",
+      "keywords": [
+        "toothache",
+        "daant dard",
+        "दांत दर्द",
+        "dant dard",
+        "tooth pain",
+        "cavity",
+        "masoora",
+        "मसूड़ा"
+      ],
+      "advice": "Rinse with warm salt water, avoid very hot or cold food, and see a dentist — painkillers only hide the cause.",
+      "medicines": [
+        {
+          "name": "Paracetamol 500 mg",
+          "why": "Temporary pain relief until you see a dentist",
+          "dose": "1 tablet up to 3 times a day after food.",
+          "otc": true
+        },
+        {
+          "name": "Ibuprofen 200 mg",
+          "why": "If there is swelling",
+          "dose": "1 tablet after food, up to 3 times a day. Avoid with stomach ulcers.",
+          "otc": true
+        }
+      ],
+      "seeDoctorIf": "Facial swelling, fever, difficulty opening the mouth, or pain lasting more than 2 days.",
+      "sources": [
+        "NHS toothache"
+      ]
+    },
+    {
+      "id": "burn",
+      "condition": "Minor burn · हल्की जलन · Jalan (burn)",
+      "keywords": [
+        "burn",
+        "jal gaya",
+        "जल गया",
+        "scald",
+        "garm pani se jal",
+        "blister"
+      ],
+      "advice": "Cool under running tap water for 20 minutes, remove rings, cover loosely with cling film or a clean cloth. Do not apply ice, toothpaste or oil.",
+      "medicines": [
+        {
+          "name": "Paracetamol 500 mg",
+          "why": "Pain relief",
+          "dose": "1 tablet up to 3 times a day after food.",
+          "otc": true
+        },
+        {
+          "name": "Silver sulfadiazine cream",
+          "why": "For small superficial burns, ask a pharmacist",
+          "dose": "Apply a thin layer 1–2 times a day on clean skin.",
+          "otc": false
+        }
+      ],
+      "seeDoctorIf": "Burn larger than your palm, on the face, hands, feet or genitals, white or charred skin, or a child or elderly person.",
+      "sources": [
+        "NHS burns and scalds"
+      ]
+    }
+  ]
+}
