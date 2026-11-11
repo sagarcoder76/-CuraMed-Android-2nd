@@ -29,6 +29,7 @@ _load_dotenv()
 # Optional keys (empty = not configured, app falls back to local data)
 OPENFDA_API_KEY = os.environ.get("OPENFDA_API_KEY", "").strip()
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
+TINYFISH_API_KEY = os.environ.get("TINYFISH_API_KEY", "").strip()
 # Generic fallback if you use a different provider later
 CURAMED_API_KEY = os.environ.get("CURAMED_API_KEY", "").strip()
 
@@ -37,6 +38,8 @@ def api_status():
     return {
         "openfda_configured": bool(OPENFDA_API_KEY),
         "gemini_configured": bool(GEMINI_API_KEY),
+        "tinyfish_configured": bool(TINYFISH_API_KEY),
         "generic_configured": bool(CURAMED_API_KEY),
         "rxnav": "always available (no key needed)",
+        "tinyfish": "web search, needs key (free 12k searches/day)",
     }

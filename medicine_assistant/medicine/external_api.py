@@ -11,7 +11,7 @@ import json
 import urllib.parse
 import urllib.request
 
-from config import OPENFDA_API_KEY, GEMINI_API_KEY
+from config import OPENFDA_API_KEY, GEMINI_API_KEY, TINYFISH_API_KEY
 
 TIMEOUT = 8  # seconds — keep the UI responsive
 
@@ -74,11 +74,47 @@ def search_openfda(query):
         return []
 
 
+def search_tinyfish(query, location="IN", language="en"):
+    """TinyFish search API -> ranked web results. Needs TINYFISH_API_KEY."""
+    if not TINYFISH_API_KEY or not query or not query.strip():
+        return []
+    params = urllib.parse.urlencode({
+        "query": f"{query.strip()} medicine uses dosage side effects",
+        "purpose": "Identify a medicine from its name and summarise approved uses, dose and warnings",
+        "location": location,
+        "language": language,
+    })
+    req = urllib.request.Request(
+        f"https://api.search.tinyfish.ai?{params}",
+        headers={
+            "X-API-Key": TINYFISH_API_KEY,
+            "Accept": "application/json",
+            "User-Agent": "CuraMed/1.0",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=12) as resp:
+            data = json.loads(resp.read().decode("utf-8", "replace"))
+        out = []
+        for r in (data.get("results") or [])[:6]:
+            out.append({
+                "name": r.get("title") or query,
+                "generic": "",
+                "manufacturer": r.get("site_name", ""),
+                "uses": (r.get("snippet") or "")[:300],
+                "url": r.get("url", ""),
+                "source": "TinyFish (live web)",
+            })
+        return out
+    except Exception:
+        return []
+
+
 def search_external(query):
     """Combined live search. Returns [] if offline / no results."""
     if not query or not query.strip():
         return []
-    results = search_rxnav(query) + search_openfda(query)
+    results = search_rxnav(query) + search_openfda(query) + search_tinyfish(query)
     # de-dupe by lowercase name, keep order
     seen, out = set(), []
     for r in results:

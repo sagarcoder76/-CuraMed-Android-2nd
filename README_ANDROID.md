@@ -52,13 +52,20 @@ Profile & Settings → **Live medicine API (optional)**:
 | RxNav (NLM) | No | Live US drug-name lookup, free |
 | OpenFDA | Optional | Live brand/generic names, uses, manufacturer. A key only raises rate limits |
 | Google Gemini | **Yes** | AI reads the label photo during Scan (better on blurry/angled packs) |
+| TinyFish | **Yes** | Live web search — finds the medicine on medical sites, shows a snippet + "Open source" link. Free 12,000 searches/day |
 
 The key is stored in the WebView's `localStorage` on that device only. It is not
 baked into the APK, so a leaked APK does not leak the key. If a device is shared,
 tap **Clear** to remove it.
 
 Get keys: OpenFDA — https://open.fda.gov/apis/authentication/ ·
-Gemini — https://aistudio.google.com/apikey
+Gemini — https://aistudio.google.com/apikey ·
+TinyFish — https://agent.tinyfish.ai/api-keys
+
+Cross-origin calls (OpenFDA, RxNav, Gemini, TinyFish) go through Capacitor's
+built-in native HTTP bridge inside the APK, so browser CORS rules do not apply.
+In a desktop browser preview they fall back to plain `fetch` and may be blocked
+by the provider's CORS policy — this only affects previewing, not the APK.
 
 ### 2. In the Python backend (server-side proxy)
 Safest option: the key never reaches the phone.
@@ -74,6 +81,9 @@ python3 app.py
 - `GET  /api/external/search?q=paracetamol` → live RxNav + OpenFDA results
 - `POST /api/external/scan` with `{"image_base64": "..."}` → AI-read label text
 - `GET  /api/config/status` → which providers are configured (never returns keys)
+
+Set `TINYFISH_API_KEY` in `.env` to have `/api/external/search` also return
+TinyFish web results (`X-API-Key` header, `GET https://api.search.tinyfish.ai`).
 
 ### Never do this
 Do **not** paste a real key into `www/index.html`, `app.py`, or any committed
