@@ -234,7 +234,7 @@
   </nav>
 
   <div id="reminder-modal" class="fixed inset-0 z-[70] hidden items-end justify-center bg-black/30 p-0 backdrop-blur-sm sm:items-center sm:p-4">
-    <div class="w-full max-w-2xl rounded-t-[2rem] bg-white p-5 shadow-2xl sm:rounded-[2rem]">
+    <div class="max-h-[90vh] w-full max-w-2xl overflow-y-auto overscroll-contain rounded-t-[2rem] bg-white p-5 shadow-2xl sm:rounded-[2rem]">
       <div class="mb-5 flex items-center justify-between"><div><p class="text-sm font-bold uppercase tracking-wide text-primary">Care Suite</p><h2 class="font-display text-2xl font-bold">Medicine Reminders</h2></div><button id="close-reminders" class="flex h-11 w-11 items-center justify-center rounded-full bg-surface-low"><span class="material-symbols-outlined">close</span></button></div>
       <form id="reminder-form" class="mb-5 rounded-[1.5rem] bg-surface-low p-4">
         <div class="grid gap-3 sm:grid-cols-2"><input id="r-medicine" required placeholder="Medicine name" class="h-12 rounded-xl bg-white px-4 outline-none ring-primary/20 focus:ring-2"><input id="r-dosage" placeholder="Dose (e.g. 500 mg · 1 tablet)" class="h-12 rounded-xl bg-white px-4 outline-none ring-primary/20 focus:ring-2"><input id="r-time" required type="time" class="h-12 rounded-xl bg-white px-4 outline-none ring-primary/20 focus:ring-2"><select id="r-repeat" class="h-12 rounded-xl bg-white px-4 outline-none"><option value="daily">Every day</option><option value="weekdays">Weekdays</option><option value="once">One time</option></select></div>
@@ -245,12 +245,12 @@
   </div>
 
   <div id="history-modal" class="fixed inset-0 z-[70] hidden items-end justify-center bg-black/30 p-0 backdrop-blur-sm sm:items-center sm:p-4">
-    <div class="w-full max-w-2xl rounded-t-[2rem] bg-white p-5 shadow-2xl sm:rounded-[2rem]"><div class="mb-4 flex items-center justify-between"><div><p class="text-sm font-bold uppercase tracking-wide text-primary">Dose history</p><h2 class="font-display text-2xl font-bold">History & Logs</h2></div><button id="close-history" class="flex h-11 w-11 items-center justify-center rounded-full bg-surface-low"><span class="material-symbols-outlined">close</span></button></div><div id="history-list" class="max-h-[55vh] space-y-2 overflow-auto"></div></div>
+    <div class="max-h-[90vh] w-full max-w-2xl overflow-y-auto overscroll-contain rounded-t-[2rem] bg-white p-5 shadow-2xl sm:rounded-[2rem]"><div class="mb-4 flex items-center justify-between"><div><p class="text-sm font-bold uppercase tracking-wide text-primary">Dose history</p><h2 class="font-display text-2xl font-bold">History & Logs</h2></div><button id="close-history" class="flex h-11 w-11 items-center justify-center rounded-full bg-surface-low"><span class="material-symbols-outlined">close</span></button></div><div id="history-list" class="max-h-[55vh] space-y-2 overflow-auto"></div></div>
   </div>
 
 
   <div id="scan-modal" class="fixed inset-0 z-[80] hidden items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4">
-    <div class="w-full max-w-2xl rounded-t-[2rem] bg-white p-5 shadow-2xl sm:rounded-[2rem]">
+    <div class="max-h-[90vh] w-full max-w-2xl overflow-y-auto overscroll-contain rounded-t-[2rem] bg-white p-5 shadow-2xl sm:rounded-[2rem]">
       <div class="mb-4 flex items-center justify-between">
         <div><p class="text-sm font-bold uppercase tracking-wide text-secondary">Medicine scanner</p><h2 class="font-display text-2xl font-bold">Scan Medicine</h2></div>
         <button id="close-scan" class="flex h-11 w-11 items-center justify-center rounded-full bg-surface-low"><span class="material-symbols-outlined">close</span></button>
@@ -275,7 +275,7 @@
   </div>
 
   <div id="drug-info-modal" class="fixed inset-0 z-[85] hidden items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4">
-    <div class="w-full max-w-2xl rounded-t-[2rem] bg-white p-5 shadow-2xl sm:rounded-[2rem]">
+    <div class="max-h-[90vh] w-full max-w-2xl overflow-y-auto overscroll-contain rounded-t-[2rem] bg-white p-5 shadow-2xl sm:rounded-[2rem]">
       <div class="mb-4 flex items-center justify-between gap-3">
         <div class="min-w-0"><p class="text-sm font-bold uppercase tracking-wide text-tertiary">Medsathi Library</p><h2 id="drug-info-title" class="font-display text-2xl font-bold truncate">Drug information</h2><p id="drug-info-subtitle" class="text-sm text-on-surface-variant"></p></div>
         <button id="close-drug-info" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-low"><span class="material-symbols-outlined">close</span></button>
@@ -285,7 +285,7 @@
   </div>
 
   <div id="profile-modal" class="fixed inset-0 z-[80] hidden items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4">
-    <div class="w-full max-w-2xl rounded-t-[2rem] bg-white p-5 shadow-2xl sm:rounded-[2rem]">
+    <div class="max-h-[90vh] w-full max-w-2xl overflow-y-auto overscroll-contain rounded-t-[2rem] bg-white p-5 shadow-2xl sm:rounded-[2rem]">
       <div class="mb-4 flex items-center justify-between">
         <div><p class="text-sm font-bold uppercase tracking-wide text-primary">Medsathi</p><h2 class="font-display text-2xl font-bold" data-i18n="profile">Profile & Settings</h2></div>
         <button id="close-profile" class="flex h-11 w-11 items-center justify-center rounded-full bg-surface-low"><span class="material-symbols-outlined">close</span></button>
@@ -311,9 +311,25 @@
           <span><span class="block font-bold" data-i18n="clearHistory">Clear history & logs</span><span class="text-sm text-on-surface-variant">Remove locally saved dose records</span></span>
           <span class="material-symbols-outlined text-outline">delete_sweep</span>
         </button>
-        <div class="rounded-2xl bg-surface-low p-4">
+        <button id="api-settings-btn" class="flex w-full items-center justify-between rounded-2xl bg-surface-low p-4 text-left active:scale-[.99]">
+          <span class="min-w-0"><span class="block font-bold">API keys</span><span id="api-summary" class="text-sm text-on-surface-variant">TinyFish · OpenFDA · AI Studio — optional</span></span>
+          <span class="flex shrink-0 items-center gap-2"><span class="material-symbols-outlined text-primary">key</span><span class="material-symbols-outlined text-outline">chevron_right</span></span>
+        </button>
+        <div class="rounded-2xl border border-slate-200 p-4 text-sm text-on-surface-variant"><b>Medsathi</b> · All info in one app<br/>Reminders, scan, search and history run on this device. Bundled medicine records are demo data.</div>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="api-modal" class="fixed inset-0 z-[95] hidden items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+    <div class="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-t-[2rem] bg-white shadow-2xl sm:rounded-[2rem]">
+      <div class="flex items-center justify-between gap-3 border-b border-slate-100 p-5 pb-4">
+        <div class="min-w-0"><p class="text-xs font-bold uppercase tracking-wide text-primary">Profile &rsaquo; API keys</p><h2 class="font-display text-2xl font-bold">API keys</h2></div>
+        <button id="close-api" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-low"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5">
           <div class="flex items-center justify-between gap-2">
-            <span class="font-bold">API keys (optional)</span>
+            <span class="text-sm font-bold text-on-surface-variant">Optional — add any or all three</span>
             <span id="api-status-badge" class="rounded-full bg-surface-high px-2 py-1 text-xs font-bold text-outline">Local only</span>
           </div>
           <p class="mt-1 text-sm text-on-surface-variant">Add any or all three. Keys stay on this device only — never in the app code. Everything still works offline without them.</p>
@@ -342,8 +358,6 @@
             <button id="api-clear-btn" class="flex h-11 items-center justify-center rounded-full bg-white px-4 font-bold text-outline ring-1 ring-slate-200">Clear</button>
           </div>
           <p id="api-status-text" class="mt-2 text-xs leading-5 text-on-surface-variant">No keys saved. Search and scan use the on-device library.</p>
-        </div>
-        <div class="rounded-2xl border border-slate-200 p-4 text-sm text-on-surface-variant"><b>Medsathi</b> · All info in one app<br/>Reminders, scan, search and history run on this device. Bundled medicine records are demo data.</div>
       </div>
     </div>
   </div>
@@ -386,7 +400,13 @@ function applyLanguage(){
  $('dark-mode-sub').textContent=p.dark?(p.language==='hi'?'आंखों के लिए आरामदायक डार्क थीम':p.language==='pa'?'ਅੱਖਾਂ ਲਈ ਆਰਾਮਦਾਇਕ ਡਾਰਕ ਥੀਮ':'Comfortable low-light appearance'):(p.language==='hi'?'लाइट थीम':p.language==='pa'?'ਲਾਈਟ ਥੀਮ':'Light appearance');
 }
 function openModal(m){m.classList.remove('hidden');m.classList.add('flex')}function closeModal(m){m.classList.add('hidden');m.classList.remove('flex')}
-function openProfile(){openModal(profileModal);applyLanguage();applyTheme();updateNotificationStatus();if(typeof updateApiUi==='function')updateApiUi()}function closeProfile(){closeModal(profileModal)}
+function openProfile(){openModal(profileModal);applyLanguage();applyTheme();updateNotificationStatus();if(typeof updateApiUi==='function')updateApiUi()}
+const apiModal=document.getElementById('api-modal');
+function openApi(){if(!apiModal)return;updateApiUi();openModal(apiModal);setTimeout(()=>$('key-tinyfish')?.focus(),120)}
+function closeApi(){if(apiModal)closeModal(apiModal)}
+$('api-settings-btn').onclick=openApi;
+$('close-api').onclick=closeApi;
+if(apiModal)apiModal.addEventListener('click',e=>{if(e.target===apiModal)closeApi()});function closeProfile(){closeModal(profileModal)}
 $('profile-btn').onclick=openProfile;$('close-profile').onclick=closeProfile;profileModal.addEventListener('click',e=>{if(e.target===profileModal)closeProfile()});
 $('profile-name').oninput=e=>{const p=profile();p.name=e.target.value;saveProfile(p);$('profile-avatar').textContent=(p.name||'M').trim().charAt(0).toUpperCase()||'M';};
 $('language-select').onchange=e=>{const p=profile();p.language=e.target.value;saveProfile(p);applyLanguage();renderReminders();updateNextDose();};
@@ -503,6 +523,8 @@ function updateApiUi(){
   :'No keys saved. Search and scan use the on-device library only.';
  if(set.length&&isBuiltin)txt.textContent+=' Built-in keys from the app build — you can replace them with your own.';
  if(backendUrl())txt.textContent+=` Live data is served by ${backendUrl()} — no key needed on this device.`;
+ const summary=$('api-summary');
+ if(summary)summary.textContent=set.length?set.map(n=>KEY_NAMES[n]).join(' · ')+' active — tap to manage':(backendUrl()?'Server API in use':'Not set — tap to add TinyFish, OpenFDA or AI Studio');
 }
 /* Cross-origin calls go through Capacitor's native HTTP inside the APK,
    which bypasses browser CORS; plain fetch is used in a browser preview. */
