@@ -41,28 +41,31 @@ CuraMed works fully offline with **no key**. Adding a key is optional and only
 turns on *live* data. The key is **never hardcoded in the app source**.
 
 ### 1. In the Android app (recommended for the APK)
-Profile & Settings → **Live medicine API (optional)**:
-1. Pick a **Provider**.
-2. Paste the key.
-3. Tap **Save key**, then **Test** (it should report live results for "paracetamol").
+Profile & Settings → **API keys (optional)** → paste any or all three → **Save keys** → **Test**.
 
-| Provider | Key needed? | What it gives you |
-|---|---|---|
-| Off — local library only | — | 6 bundled demo medicines, fully offline |
-| RxNav (NLM) | No | Live US drug-name lookup, free |
-| OpenFDA | Optional | Live brand/generic names, uses, manufacturer. A key only raises rate limits |
-| Google Gemini | **Yes** | AI reads the label photo during Scan (better on blurry/angled packs) |
-| TinyFish | **Yes** | Live web search — finds the medicine on medical sites, shows a snippet + "Open source" link. Free 12,000 searches/day |
+| # | Key | Used for | Needed? |
+|---|---|---|---|
+| 1 | **TinyFish** | Live web search: finds the medicine on medical sites, snippet + "Open source" link | Optional (free 12,000 searches/day) |
+| 2 | **OpenFDA** | Live drug-label data: brand/generic name, manufacturer, indications | Optional — works without a key at lower limits |
+| 3 | **Google AI Studio (Gemini)** | Vision scan: reads the label photo when OCR struggles | Optional |
 
-The key is stored in the WebView's `localStorage` on that device only. It is not
-baked into the APK, so a leaked APK does not leak the key. If a device is shared,
-tap **Clear** to remove it.
+All three can be saved at the same time — they do not replace each other:
 
-Get keys: OpenFDA — https://open.fda.gov/apis/authentication/ ·
-Gemini — https://aistudio.google.com/apikey ·
-TinyFish — https://agent.tinyfish.ai/api-keys
+- **Search** runs TinyFish (if set) and OpenFDA (always) in parallel, merges and
+  de-duplicates the results under "Live results", and falls back to RxNav (free,
+  no key) if both return nothing.
+- **Scan** uses the AI Studio key first (vision), then native ML Kit OCR, then
+  Tesseract.js — and appends live search matches for whatever text was read.
 
-Cross-origin calls (OpenFDA, RxNav, Gemini, TinyFish) go through Capacitor's
+Keys are stored in the WebView's `localStorage` on that device only. They are not
+baked into the APK, so a leaked APK does not leak them. Tap **Clear** on a shared
+device. The **Test** button reports each key as ✓ or ✗ individually.
+
+Get keys: TinyFish — https://agent.tinyfish.ai/api-keys ·
+OpenFDA — https://open.fda.gov/apis/authentication/ ·
+AI Studio — https://aistudio.google.com/apikey
+
+Cross-origin calls (TinyFish, OpenFDA, RxNav, Gemini) go through Capacitor's
 built-in native HTTP bridge inside the APK, so browser CORS rules do not apply.
 In a desktop browser preview they fall back to plain `fetch` and may be blocked
 by the provider's CORS policy — this only affects previewing, not the APK.

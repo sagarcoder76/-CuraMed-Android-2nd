@@ -289,26 +289,35 @@
         </button>
         <div class="rounded-2xl bg-surface-low p-4">
           <div class="flex items-center justify-between gap-2">
-            <span class="font-bold">Live medicine API (optional)</span>
+            <span class="font-bold">API keys (optional)</span>
             <span id="api-status-badge" class="rounded-full bg-surface-high px-2 py-1 text-xs font-bold text-outline">Local only</span>
           </div>
-          <p class="mt-1 text-sm text-on-surface-variant">Search works offline without a key. Add a key for live results from thousands of medicines. Key is saved only on this device.</p>
-          <label class="mt-3 block text-xs font-bold uppercase tracking-wide text-outline">Provider</label>
-          <select id="api-provider" class="mt-1 h-12 w-full rounded-xl bg-white px-3 font-semibold outline-none">
-            <option value="none">Off — local library only</option>
-            <option value="openfda">OpenFDA (free, key optional)</option>
-            <option value="rxnav">RxNav / NLM (free, no key)</option>
-            <option value="tinyfish">TinyFish web search (free key, 12k/day)</option>
-            <option value="gemini">Google Gemini AI scan (free key)</option>
-          </select>
-          <label class="mt-3 block text-xs font-bold uppercase tracking-wide text-outline">API key</label>
-          <input id="api-key-input" type="password" autocomplete="off" placeholder="Paste your API key here" class="mt-1 h-12 w-full rounded-xl bg-white px-4 outline-none ring-primary/20 focus:ring-2" />
+          <p class="mt-1 text-sm text-on-surface-variant">Add any or all three. Keys stay on this device only — never in the app code. Everything still works offline without them.</p>
+
+          <div class="mt-3 rounded-xl bg-white p-3 ring-1 ring-slate-200">
+            <div class="flex items-center justify-between gap-2"><label for="key-tinyfish" class="text-xs font-bold uppercase tracking-wide text-outline">1 · TinyFish — live web search</label><span id="key-status-tinyfish" class="rounded-full bg-surface-high px-2 py-0.5 text-[10px] font-bold text-outline">Not set</span></div>
+            <input id="key-tinyfish" type="password" autocomplete="off" spellcheck="false" placeholder="Paste TinyFish key" class="mt-2 h-11 w-full rounded-lg bg-surface-low px-3 text-sm outline-none ring-primary/20 focus:ring-2" />
+            <p class="mt-1 text-[11px] text-on-surface-variant">Free 12,000 searches/day · <span class="font-semibold">agent.tinyfish.ai/api-keys</span></p>
+          </div>
+
+          <div class="mt-2 rounded-xl bg-white p-3 ring-1 ring-slate-200">
+            <div class="flex items-center justify-between gap-2"><label for="key-openfda" class="text-xs font-bold uppercase tracking-wide text-outline">2 · OpenFDA — drug label data</label><span id="key-status-openfda" class="rounded-full bg-surface-high px-2 py-0.5 text-[10px] font-bold text-outline">Not set</span></div>
+            <input id="key-openfda" type="password" autocomplete="off" spellcheck="false" placeholder="Paste OpenFDA key (optional)" class="mt-2 h-11 w-full rounded-lg bg-surface-low px-3 text-sm outline-none ring-primary/20 focus:ring-2" />
+            <p class="mt-1 text-[11px] text-on-surface-variant">Works without a key at lower limits · <span class="font-semibold">open.fda.gov/apis/authentication</span></p>
+          </div>
+
+          <div class="mt-2 rounded-xl bg-white p-3 ring-1 ring-slate-200">
+            <div class="flex items-center justify-between gap-2"><label for="key-gemini" class="text-xs font-bold uppercase tracking-wide text-outline">3 · Google AI Studio — AI scan</label><span id="key-status-gemini" class="rounded-full bg-surface-high px-2 py-0.5 text-[10px] font-bold text-outline">Not set</span></div>
+            <input id="key-gemini" type="password" autocomplete="off" spellcheck="false" placeholder="Paste AI Studio (Gemini) key" class="mt-2 h-11 w-full rounded-lg bg-surface-low px-3 text-sm outline-none ring-primary/20 focus:ring-2" />
+            <p class="mt-1 text-[11px] text-on-surface-variant">Reads the label photo with vision · <span class="font-semibold">aistudio.google.com/apikey</span></p>
+          </div>
+
           <div class="mt-3 flex gap-2">
-            <button id="api-save-btn" class="flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-primary font-bold text-white"><span class="material-symbols-outlined">key</span>Save key</button>
+            <button id="api-save-btn" class="flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-primary font-bold text-white"><span class="material-symbols-outlined">key</span>Save keys</button>
             <button id="api-test-btn" class="flex h-11 items-center justify-center gap-2 rounded-full bg-white px-4 font-bold text-primary ring-1 ring-slate-200">Test</button>
             <button id="api-clear-btn" class="flex h-11 items-center justify-center rounded-full bg-white px-4 font-bold text-outline ring-1 ring-slate-200">Clear</button>
           </div>
-          <p id="api-status-text" class="mt-2 text-xs text-on-surface-variant">No key saved. Search & scan use the on-device library.</p>
+          <p id="api-status-text" class="mt-2 text-xs leading-5 text-on-surface-variant">No keys saved. Search and scan use the on-device library.</p>
         </div>
         <div class="rounded-2xl border border-slate-200 p-4 text-sm text-on-surface-variant"><b>CuraMed</b> · Medicine Assistant<br/>Reminders, scan, search and history run on this device. Bundled medicine records are demo data.</div>
       </div>
@@ -399,24 +408,35 @@ function medicineScore(m,q){
  const qt=tokens(q); const all=tokens(fields.join(' ')); qt.forEach(t=>{if(all.some(x=>x.includes(t)||t.includes(x)))score+=5});
  return score;
 }
-/* ---------- Optional live medicine API (key never hardcoded) ---------- */
-const API_KEY_STORE='curamed.api.v1';
+/* ---------- Optional live APIs: TinyFish + OpenFDA + AI Studio (Gemini) ----------
+   Three independent keys, each optional. Never hardcoded — stored on device. */
+const API_KEY_STORE='curamed.api.v2';
 const RXNAV_NO_KEY='https://rxnav.nlm.nih.gov/REST';
 const OPENFDA_BASE='https://api.fda.gov/drug/label.json';
 const GEMINI_BASE='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
-function apiConfig(){return readJson(API_KEY_STORE,{provider:'none',key:''});}
-function saveApiConfig(cfg){localStorage.setItem(API_KEY_STORE,JSON.stringify(cfg));}
-function liveEnabled(){const c=apiConfig();return c.provider!=='none';}
-function geminiEnabled(){const c=apiConfig();return c.provider==='gemini'&&!!c.key;}
+const TINYFISH_SEARCH='https://api.search.tinyfish.ai';
+const KEY_NAMES={tinyfish:'TinyFish',openfda:'OpenFDA',gemini:'AI Studio'};
+function apiKeys(){const r=readJson(API_KEY_STORE,{})||{};return{tinyfish:(r.tinyfish||'').trim(),openfda:(r.openfda||'').trim(),gemini:(r.gemini||'').trim()};}
+function saveApiKeys(k){localStorage.setItem(API_KEY_STORE,JSON.stringify({tinyfish:(k.tinyfish||'').trim(),openfda:(k.openfda||'').trim(),gemini:(k.gemini||'').trim()}));}
+function activeKeyNames(){const k=apiKeys();return['tinyfish','openfda','gemini'].filter(n=>k[n]);}
+function liveEnabled(){return activeKeyNames().length>0;}
+function geminiEnabled(){return!!apiKeys().gemini;}
+function mask(k){return k.length>8?`${k.slice(0,4)}••••${k.slice(-4)}`:'set';}
 function updateApiUi(){
- const c=apiConfig(),badge=$('api-status-badge'),txt=$('api-status-text');
+ const k=apiKeys(),badge=$('api-status-badge'),txt=$('api-status-text');
  if(!badge||!txt)return;
- const names={none:'Local only',openfda:'OpenFDA live',rxnav:'RxNav live',gemini:'Gemini AI',tinyfish:'TinyFish live'};
- badge.textContent=names[c.provider]||'Local only';
- badge.className='rounded-full px-2 py-1 text-xs font-bold '+(liveEnabled()?'bg-secondary-light text-secondary':'bg-surface-high text-outline');
- $('api-provider').value=c.provider||'none';
- $('api-key-input').value=c.key||'';
- txt.textContent=c.provider==='none'?'No key saved. Search & scan use the on-device library.':(c.key?`Key saved on this device (${c.key.slice(0,4)}••••${c.key.slice(-4)}). It is never written into the app code.`:`${names[c.provider]} works without a key — adding one raises rate limits.`);
+ const set=activeKeyNames();
+ badge.textContent=set.length?`${set.length} key${set.length>1?'s':''} active`:'Local only';
+ badge.className='rounded-full px-2 py-1 text-xs font-bold '+(set.length?'bg-secondary-light text-secondary':'bg-surface-high text-outline');
+ ['tinyfish','openfda','gemini'].forEach(n=>{
+  const input=$('key-'+n);if(input)input.value=k[n]||'';
+  const pill=$('key-status-'+n);if(!pill)return;
+  if(k[n]){pill.textContent='✓ Set';pill.className='rounded-full bg-secondary-light px-2 py-0.5 text-[10px] font-bold text-secondary';}
+  else{pill.textContent='Not set';pill.className='rounded-full bg-surface-high px-2 py-0.5 text-[10px] font-bold text-outline';}
+ });
+ txt.textContent=set.length
+  ?set.map(n=>`${KEY_NAMES[n]} ✓`).join(' · ')+` — saved on this device (${mask(k[set[0]])}). Live search + AI scan are on.`
+  :'No keys saved. Search and scan use the on-device library only.';
 }
 /* Cross-origin calls go through Capacitor's native HTTP inside the APK,
    which bypasses browser CORS; plain fetch is used in a browser preview. */
@@ -434,31 +454,46 @@ async function apiRequest(url,{method='GET',headers={},body=null}={}){
  let data=null;try{data=await r.json()}catch(e){}
  return {ok:r.ok,status:r.status,data};
 }
-const TINYFISH_SEARCH='https://api.search.tinyfish.ai';
-async function liveSearch(q){
- const c=apiConfig();
- if(c.provider==='none'||!q)return [];
- const timeout=new Promise(r=>setTimeout(()=>r(null),7000));
+async function tinyfishSearch(q,key){
  try{
-  if(c.provider==='tinyfish'){
-   const params=new URLSearchParams({query:`${q} medicine uses dosage side effects`,purpose:'Identify a medicine from its name and summarise approved uses, dose and warnings',location:'IN',language:'en'});
-   const r=await Promise.race([apiRequest(`${TINYFISH_SEARCH}?${params}`,{headers:{'X-API-Key':c.key,'Accept':'application/json'}}),timeout]);
+  const params=new URLSearchParams({query:`${q} medicine uses dosage side effects warnings`,purpose:'Identify a medicine from its name and summarise approved uses, dose and safety warnings',location:'IN',language:'en'});
+  const r=await apiRequest(`${TINYFISH_SEARCH}?${params}`,{headers:{'X-API-Key':key,'Accept':'application/json'}});
+  return ((r&&r.data&&r.data.results)||[]).slice(0,5).map(x=>({name:x.title||q,generic:'',manufacturer:x.site_name||'',uses:(x.snippet||'').slice(0,300),url:x.url||'',source:'TinyFish'}));
+ }catch(e){console.warn('TinyFish failed',e);return[];}
+}
+async function openfdaSearch(q,key){
+ const suffix=key?`&api_key=${encodeURIComponent(key)}`:'';
+ try{
+  for(const field of['brand_name','generic_name']){
+   const r=await apiRequest(`${OPENFDA_BASE}?search=openfda.${field}:${encodeURIComponent(q)}&limit=5${suffix}`);
    const list=(r&&r.data&&r.data.results)||[];
-   return list.slice(0,6).map(x=>({name:x.title||q,generic:'',manufacturer:x.site_name||'',uses:(x.snippet||'').slice(0,300),url:x.url||'',source:'TinyFish (live web)'}));
+   if(list.length)return list.map(x=>{const o=x.openfda||{};return{name:(o.brand_name||o.generic_name||[q])[0],generic:(o.generic_name||[''])[0],manufacturer:(o.manufacturer_name||[''])[0],uses:(x.indications_and_usage||[''])[0].slice(0,240),source:'OpenFDA'};});
   }
-  if(c.provider==='openfda'){
-   let url=`${OPENFDA_BASE}?search=openfda.brand_name:${encodeURIComponent(q)}&limit=6`+(c.key?`&api_key=${encodeURIComponent(c.key)}`:'');
-   let res=await Promise.race([apiRequest(url),timeout]);let r=res&&res.data;
-   if(!r||!r.results){url=`${OPENFDA_BASE}?search=openfda.generic_name:${encodeURIComponent(q)}&limit=6`+(c.key?`&api_key=${encodeURIComponent(c.key)}`:'');res=await Promise.race([apiRequest(url),timeout]);r=res&&res.data;}
-   return (r?.results||[]).map(x=>{const o=x.openfda||{};return{name:(o.brand_name||o.generic_name||[q])[0],generic:(o.generic_name||[''])[0],manufacturer:(o.manufacturer_name||[''])[0],uses:(x.indications_and_usage||[''])[0].slice(0,240),source:'OpenFDA (live)'};});
-  }
-  if(c.provider==='rxnav'||c.provider==='gemini'){
-   const res=await Promise.race([apiRequest(`${RXNAV_NO_KEY}/rxcui.json?name=${encodeURIComponent(q)}`),timeout]);
-   const ids=(((res||{}).data)||{}).idGroup?.rxcui||[];
-   return ids.slice(0,6).map(id=>({name:q,generic:q,rxcui:id,source:'RxNav (NLM, live)'}));
-  }
- }catch(e){console.warn('Live search failed',e);}
- return [];
+ }catch(e){console.warn('OpenFDA failed',e);}
+ return[];
+}
+async function rxnavSearch(q){
+ try{
+  const r=await apiRequest(`${RXNAV_NO_KEY}/rxcui.json?name=${encodeURIComponent(q)}`);
+  const ids=((r&&r.data)||{}).idGroup?.rxcui||[];
+  return ids.slice(0,5).map(id=>({name:q,generic:q,rxcui:id,source:'RxNav'}));
+ }catch(e){console.warn('RxNav failed',e);return[];}
+}
+async function liveSearch(q){
+ if(!q||!liveEnabled())return[];
+ const k=apiKeys(),jobs=[];
+ if(k.tinyfish)jobs.push(tinyfishSearch(q,k.tinyfish));
+ jobs.push(openfdaSearch(q,k.openfda));
+ let all=(await Promise.all(jobs)).flat();
+ if(!all.length)all=await rxnavSearch(q);
+ const seen=new Set();
+ return all.filter(x=>{const key=((x.name||'')+'|'+(x.url||'')).toLowerCase();if(!key||seen.has(key))return false;seen.add(key);return true;}).slice(0,8);
+}
+async function testGeminiKey(key){
+ try{
+  const r=await apiRequest(`${GEMINI_BASE}?key=${encodeURIComponent(key)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:{contents:[{parts:[{text:'Reply with the single word: OK'}]}]}});
+  return !!(r&&r.ok&&r.data);
+ }catch(e){console.warn('Gemini test failed',e);return false;}
 }
 function renderLiveRows(rows){
  return rows.map(x=>`<div class="flex w-full items-start gap-3 border-t border-slate-100 p-4 text-left"><span class="material-symbols-outlined text-secondary">cloud</span><span class="min-w-0 flex-1"><b>${esc(x.name)}</b><small class="block text-outline">${esc([x.generic&&x.generic!==x.name?x.generic:'',x.manufacturer||'',x.source].filter(Boolean).join(' · '))}</small>${x.uses?`<small class="mt-1 block text-xs leading-5 text-on-surface-variant">${esc(x.uses)}</small>`:''}${x.url?`<button onclick="window.open('${esc(x.url)}','_blank')" class="mt-1 text-xs font-bold text-primary underline">Open source</button>`:''}</span></div>`).join('');
@@ -476,25 +511,25 @@ function renderSearchResults(q){
   });
  }
 }
-function updateApiFromInputs(){
- saveApiConfig({provider:$('api-provider').value,key:$('api-key-input').value.trim()});
- updateApiUi();showToast('API settings saved on this device.');
-}
+function readKeyInputs(){return{tinyfish:$('key-tinyfish').value.trim(),openfda:$('key-openfda').value.trim(),gemini:$('key-gemini').value.trim()};}
+function refreshSearchIfQuerying(){const q=searchInput.value.trim();if(q)renderSearchResults(q);else searchResults.classList.add('hidden');}
 document.addEventListener('DOMContentLoaded',()=>{
  if(!$('api-save-btn'))return;
  updateApiUi();
- $('api-save-btn').onclick=updateApiFromInputs;
+ $('api-save-btn').onclick=()=>{saveApiKeys(readKeyInputs());updateApiUi();refreshSearchIfQuerying();showToast('API keys saved on this device.');};
  $('api-test-btn').onclick=async()=>{
-  const c={provider:$('api-provider').value,key:$('api-key-input').value.trim()};
-  if(c.provider==='none'){showToast('Choose a provider first.');return;}
-  showToast('Testing connection…');
-  saveApiConfig(c);
-  const res=await liveSearch('paracetamol');
-  if(res.length){showToast(`Connected — ${res.length} live results for "paracetamol".`);const t=$('api-status-text');if(t)t.textContent=`✓ ${c.provider} connected. Live results available.`;}
-  else showToast('No response. Check the key or your internet connection.');
+  const k=readKeyInputs();saveApiKeys(k);updateApiUi();
+  if(!activeKeyNames().length){showToast('Add at least one key first.');return;}
+  showToast('Testing keys…');
+  const out=[];
+  if(k.tinyfish){const r=await tinyfishSearch('paracetamol',k.tinyfish);out.push(`TinyFish ${r.length?'✓':'✗'}`);}
+  {const r=await openfdaSearch('paracetamol',k.openfda);out.push(`OpenFDA ${r.length?'✓':'✗'}`);}
+  if(k.gemini){out.push(`AI Studio ${await testGeminiKey(k.gemini)?'✓':'✗'}`);}
+  const ok=out.filter(x=>x.includes('✓')).length;
+  $('api-status-text').textContent=`Test result — ${out.join(' · ')}`;
+  showToast(ok?`${ok} key${ok>1?'s':''} working.`:'No key responded. Check keys or internet.');
  };
- $('api-clear-btn').onclick=()=>{localStorage.removeItem(API_KEY_STORE);saveApiConfig({provider:'none',key:''});updateApiUi();showToast('API key removed.');};
- $('api-provider').onchange=()=>{saveApiConfig({provider:$('api-provider').value,key:$('api-key-input').value.trim()});updateApiUi();};
+ $('api-clear-btn').onclick=()=>{localStorage.removeItem(API_KEY_STORE);updateApiUi();refreshSearchIfQuerying();showToast('All API keys removed.');};
 });
 searchInput.oninput=()=>{clearTimeout(searchTimer);const q=searchInput.value.trim();if(!q){searchResults.classList.add('hidden');return}searchTimer=setTimeout(()=>renderSearchResults(q),80)};
 window.showMedicine=id=>{const x=medicines.find(m=>m.id===id);if(!x)return;searchResults.classList.add('hidden');openMedicineInfo(x)};
@@ -639,7 +674,7 @@ function imageToBase64(src,max=1400){
 }
 async function runGeminiScan(src){
  if(!geminiEnabled())return '';
- const key=apiConfig().key;
+ const key=apiKeys().gemini;
  $('scan-status').textContent='Reading label with AI…';
  const data=await imageToBase64(src);
  try{
