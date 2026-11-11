@@ -64,6 +64,9 @@ jobs:
       - name: Patch Android alarm permission
         run: python3 scripts/patch_android.py
 
+      - name: Apply Medsathi launcher icons
+        run: python3 scripts/apply_icons.py
+
       - name: Sync Capacitor
         run: npx cap sync android
 

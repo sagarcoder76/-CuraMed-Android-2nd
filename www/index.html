@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#f3faff" />
   <title>Medsathi — All info in one app</title>
+  <link rel="icon" type="image/svg+xml" href="logo.svg" />
+  <link rel="apple-touch-icon" href="logo.svg" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -82,9 +84,7 @@
   <header class="fixed top-0 z-50 w-full safe-top border-b border-slate-100/70 bg-surface/85 backdrop-blur-xl">
     <div class="mx-auto flex h-16 max-w-2xl items-center justify-between px-4">
       <a href="#home" class="flex items-center gap-2.5" aria-label="Medsathi home">
-        <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-white shadow-sm">
-          <span class="material-symbols-outlined fill-icon text-[22px]">health_and_safety</span>
-        </div>
+        <img src="logo.svg" alt="" width="40" height="40" class="h-10 w-10 rounded-[13px] shadow-sm" />
         <span class="flex flex-col leading-none">
           <span class="font-display text-lg font-extrabold tracking-tight text-primary">Medsathi</span>
           <span class="mt-1 text-[10px] font-semibold uppercase tracking-wider text-outline">All info in one app</span>
@@ -94,7 +94,7 @@
         <button id="notification-btn" class="flex h-11 w-11 items-center justify-center rounded-full text-on-surface-variant transition hover:bg-surface-high active:scale-95" aria-label="Notifications">
           <span class="material-symbols-outlined">notifications</span>
         </button>
-        <button id="profile-btn" class="flex h-10 w-10 items-center justify-center rounded-full bg-secondary-light font-display text-sm font-bold text-secondary active:scale-95" aria-label="Open profile">M</button>
+        <button id="profile-btn" class="flex h-10 w-10 items-center justify-center rounded-full bg-secondary-light font-display text-sm font-bold text-secondary active:scale-95" aria-label="Open profile"><span class="material-symbols-outlined text-[22px]">person</span></button>
       </div>
     </div>
   </header>
@@ -292,7 +292,7 @@
       </div>
       <div class="space-y-3">
         <div class="flex items-center gap-4 rounded-2xl bg-surface-low p-4">
-          <div id="profile-avatar" class="flex h-14 w-14 items-center justify-center rounded-full bg-secondary-light font-display text-xl font-bold text-secondary">M</div>
+          <div id="profile-avatar" class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-secondary-light font-display text-xl font-bold text-secondary"><span class="material-symbols-outlined text-[26px]">person</span></div>
           <div class="min-w-0 flex-1"><p class="text-xs font-bold uppercase tracking-wide text-outline">Your name</p><input id="profile-name" class="mt-1 w-full bg-transparent font-display text-lg font-bold outline-none" placeholder="Your name" /></div>
         </div>
         <label class="flex items-center justify-between rounded-2xl bg-surface-low p-4">
@@ -395,9 +395,16 @@ function applyTheme(){const p=profile();document.body.classList.toggle('dark-mod
 function applyLanguage(){
  const p=profile(),t=I18N[p.language]||I18N.en;document.documentElement.lang=p.language==='hi'?'hi':p.language==='pa'?'pa':'en';
  document.querySelectorAll('[data-i18n]').forEach(el=>{if(t[el.dataset.i18n])el.textContent=t[el.dataset.i18n]});
- $('medicine-search').placeholder=t.search;$('profile-name').value=p.name||'';$('language-select').value=p.language;$('profile-avatar').textContent=(p.name||'M').trim().charAt(0).toUpperCase()||'M';
+ $('medicine-search').placeholder=t.search;$('profile-name').value=p.name||'';$('language-select').value=p.language;renderAvatar();
  $('current-date').textContent=new Intl.DateTimeFormat(p.language==='hi'?'hi-IN':p.language==='pa'?'pa-IN':'en-IN',{weekday:'long',month:'short',day:'numeric'}).format(new Date());
  $('dark-mode-sub').textContent=p.dark?(p.language==='hi'?'आंखों के लिए आरामदायक डार्क थीम':p.language==='pa'?'ਅੱਖਾਂ ਲਈ ਆਰਾਮਦਾਇਕ ਡਾਰਕ ਥੀਮ':'Comfortable low-light appearance'):(p.language==='hi'?'लाइट थीम':p.language==='pa'?'ਲਾਈਟ ਥੀਮ':'Light appearance');
+}
+function renderAvatar(){
+ const name=(profile().name||'').trim();
+ const initials=name?name.split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join(''):'';
+ const target=(el,size)=>{if(!el)return;el.innerHTML=initials?`<span class="font-display ${size} font-extrabold leading-none">${esc(initials)}</span>`:`<span class="material-symbols-outlined ${size==='text-lg'?'text-[22px]':'text-[26px]'}">person</span>`};
+ target($('profile-avatar'),'text-xl');
+ target($('profile-btn'),'text-lg');
 }
 function openModal(m){m.classList.remove('hidden');m.classList.add('flex')}function closeModal(m){m.classList.add('hidden');m.classList.remove('flex')}
 function openProfile(){openModal(profileModal);applyLanguage();applyTheme();updateNotificationStatus();if(typeof updateApiUi==='function')updateApiUi()}
@@ -408,7 +415,7 @@ $('api-settings-btn').onclick=openApi;
 $('close-api').onclick=closeApi;
 if(apiModal)apiModal.addEventListener('click',e=>{if(e.target===apiModal)closeApi()});function closeProfile(){closeModal(profileModal)}
 $('profile-btn').onclick=openProfile;$('close-profile').onclick=closeProfile;profileModal.addEventListener('click',e=>{if(e.target===profileModal)closeProfile()});
-$('profile-name').oninput=e=>{const p=profile();p.name=e.target.value;saveProfile(p);$('profile-avatar').textContent=(p.name||'M').trim().charAt(0).toUpperCase()||'M';};
+$('profile-name').oninput=e=>{const p=profile();p.name=e.target.value;saveProfile(p);renderAvatar();};
 $('language-select').onchange=e=>{const p=profile();p.language=e.target.value;saveProfile(p);applyLanguage();renderReminders();updateNextDose();};
 $('dark-mode-toggle').onclick=()=>{const p=profile();p.dark=!p.dark;saveProfile(p);applyTheme();};
 $('notification-btn').onclick=()=>{openModal(notificationModal);updateNotificationStatus()};$('close-notification').onclick=()=>closeModal(notificationModal);
