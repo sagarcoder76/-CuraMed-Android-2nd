@@ -31,88 +31,85 @@ DESIGN
   phone mockups where useful.
 - Max 5 bullets per slide, max 10 words per bullet. No walls of text.
 
+VISUAL SYSTEM — infographic deck, not slide-clipart
+Use this repeatable grid on every content slide. It reads as one designed system
+instead of seven unrelated layouts.
+
+- Canvas: 16:9.
+- Top-left kicker in 10pt caps: "01 · THE PROBLEM" (crimson, letter-spaced).
+- Headline below it, 30pt semibold, max 7 words, ending in a full stop.
+- A 0.9 in crimson rule under the headline; nothing else decorates the top.
+- Body zone: a strict 3-column grid of white cards, 0.28 in apart, equal widths,
+  rounded 12px corners, no borders, no shadows.
+- Each card = one bold 13pt line + one 10pt grey line. No third level of text.
+- One full-width result or takeaway bar at the bottom in a solid colour.
+- Footer on every slide: "Medsathi · all info in one app" left, slide number right,
+  9pt grey, 0.25 in from the bottom edge.
+- Title slide is the opposite: full-bleed crimson, white type, one ghosted white
+  heart mark at 12% opacity, three translucent pill chips summarising the product.
+
+DO NOT, this is what makes templates look cheap
+- No stock photos of smiling doctors, no generic "team" grid, no lorem placeholders.
+- No gradients on body slides, no three-colour rainbow icon sets.
+- Do not use a curved ribbon label with a word inside it as decoration.
+- No chart unless real numbers exist. Use a stat bar with real figures instead.
+- No bullet lists longer than 3 lines per card; if it does not fit, cut it.
+- No shadowed boxes, no bevels, no clip-art stethoscopes.
+
 EXACTLY 7 SLIDES — DO NOT ADD AN 8TH
 
 SLIDE 1 — TITLE
 - Medsathi — All info in one app.
 - One line: "Search, scan, understand and remember your medicines — in Hindi,
   Hinglish and English."
-- Sub-line: Native Android app + lightweight Python backend. Built for Indian households.
-- Visual: app icon (white heart with an ECG pulse on a crimson squircle) plus one
-  phone mockup of the home screen showing the crimson "Check" hero card.
+- Chips: 15 conditions · 3 languages · works offline.
+- Visual: full-bleed crimson, ghosted white heart mark, app icon.
 
 SLIDE 2 — THE PROBLEM
-- Medicine strips are printed in English, in tiny type many Indian users cannot read.
-- People ask neighbours or WhatsApp groups "which tablet for fever?" — and get unsafe answers.
-- Reminders live in memory, not in the phone, so doses are missed.
-- Pharmacies sell what is asked for, with no explanation of dose or side effects.
-- Result: wrong medicine, wrong dose, wrong timing.
-- Visual: three icons — pill strip, confused user, missed alarm.
+- Headline: "Strips speak English. Patients don't."
+- Three cards: "Printed in English, in tiny type" · "Unsafe advice from WhatsApp" ·
+  "Doses live in memory".
+- Result bar: "wrong medicine · wrong dose · wrong timing".
 
 SLIDE 3 — THE SOLUTION
-- One app that answers three questions:
-  1. "What is this medicine?" → search the name or scan the strip
-  2. "What should I take for this symptom?" → say it in Hindi/Hinglish, by voice
-  3. "When do I take it?" → reminders with native Android alarms
-- Offline by default; live medical data switches on when API keys are added.
-- Visual: three-column layout, one icon per pillar.
+- Headline: "One app. Three questions."
+- Three cards with numbered circles: "What is this medicine?" · "What should I take?" ·
+  "When do I take it?"
+- Takeaway line: offline by default, live data only when a key is added.
 
-SLIDE 4 — THE FEATURE SET (what ships today)
-- SYMPTOM → MEDICINE (headline): type or speak "sar dard aur halka bukhar 2 din se,
-  kya lu?" and get home care, OTC options with dose notes, when to see a doctor.
-  Hindi, Hinglish and English. 15 common complaints. One-tap buy links (1mg,
-  PharmEasy, Netmeds).
-- SCAN: point the camera at a strip → on-device OCR reads Latin and Devanagari →
-  the app shows uses, dose, side effects and precautions. No photo leaves the phone.
-- REMIND: daily / weekdays / once, Android alarms that fire with the app closed,
-  15-minute snooze, adherence ring and full dose history.
-- Visual: three stacked mini-mockups — Check card, scan result, reminder card.
+SLIDE 4 — WHAT SHIPS TODAY
+- Headline: "Symptom → medicine · scan · remind".
+- Card 1 in crimson (the headline feature): voice or text in Hindi/Hinglish/English,
+  home care + OTC options + when to see a doctor, one-tap buy links.
+- Card 2: on-device scan — camera → ML Kit OCR → uses, dose, side effects.
+- Card 3: reminders — daily/weekdays/once, native alarms, snooze, adherence ring.
+- Chip strip: voice in 3 languages · buy links · on-device OCR · adherence history.
 
 SLIDE 5 — TECHNICAL APPROACH & WORKFLOW
-- Architecture: one Capacitor 8 WebView app (single-page HTML/CSS/JS, Tailwind) over
-  a Python-standard-library backend. No heavy framework, no cloud database.
-- On-device intelligence: ML Kit OCR (Latin + Devanagari) with a Tesseract.js
-  fallback, optional Gemini vision when a key exists, Web Speech API + recorder for
-  voice input — so the core features work in airplane mode with bundled JSON libraries.
-- Optional live layer, all key-optional: TinyFish search, OpenFDA drug labels,
-  RxNav and Gemini. RxNav runs with no key at all.
-- Data & privacy: reminders, history and profile live in device storage only.
-- Key handling: user keys are entered once in Profile and stored on the phone; a CI
-  step injects build-time keys from GitHub repository secrets into a git-ignored
-  config file, and a server-proxy mode keeps keys off the client for public releases.
-- Delivery workflow: push to main → GitHub Actions installs Node + JDK + Android SDK,
-  injects keys, applies launcher icons, patches the exact-alarm permission, runs
-  Gradle → a signed debug APK appears as a downloadable artifact in ~4 minutes.
-  Every push is therefore a release.
-- Visual: simple horizontal pipeline diagram — Code → GitHub Actions → APK →
-  Install, with a small architecture strip beneath it (UI ⇄ device storage /
-  optional APIs).
+- Headline: "On-device first. Keys optional."
+- Chevron pipeline across the top: Code → GitHub Actions → APK artifact → Install.
+- Left card "Architecture": Capacitor 8 WebView + single HTML/CSS/JS surface;
+  Python standard-library backend; bundled JSON → airplane mode works.
+- Right card "Keys & privacy": user keys in device storage; CI injects build keys
+  from GitHub secrets; proxy mode for public builds.
+- Takeaway line: every push to main rebuilds the APK in about 4 minutes.
 
-SLIDE 6 — SAFETY & TRUST (this slide wins the room)
-- Emergency guard: 39 red-flag terms (chest pain, breathlessness, fainting, stroke
-  signs, fits, severe bleeding, poisoning) immediately show "Call 108 / 112" and the
-  app refuses to suggest any medicine.
-- Never a diagnosis: every screen states it is general information, not medical advice.
-- Prescription-only drugs are labelled "Ask pharmacist" instead of being dosed.
-- Privacy: symptoms, photos and history stay on the device — no account, no tracking.
-- Honest sourcing: WHO, NHS and National Health Portal India, cited on every result.
-- Visual: red emergency card beside a green "everything stays on your phone" badge.
+SLIDE 6 — SAFETY & TRUST
+- Headline: "It knows when to stop."
+- Red-tint card: emergency guard — 39 red-flag terms, "Call 108 / 112", and the app
+  refuses to suggest any medicine.
+- Green-tint card: privacy — symptoms, photos and history stay on the device.
+- Chips: never a diagnosis · Rx-only → ask pharmacist · WHO/NHS/NHPI cited.
 
 SLIDE 7 — STATUS, IMPACT & NEXT
-- Working today: Android APK built automatically from GitHub; symptom checker in three
-  languages; AI scan; offline search; reminders with native alarms; adherence history;
-  dark mode; English / Hindi / Punjabi UI.
-- Impact goal: fewer wrong-medicine incidents, better adherence in households that do
-  not read English labels.
-- Next: first-launch disclaimer acceptance, verified database for the top 500 Indian
-  brands, pharmacist-reviewed symptom content, iOS build, offline Hindi voice model.
-- Ask: pilot with 50 patients at one clinic, plus pharmacist review of the symptom
-  guidance before wider release.
-- Visual: roadmap as three columns (Now / Next / Later) and a "Try the APK" QR placeholder.
+- Headline: "Working today. Piloting next."
+- Three columns: Now (shipping) · Next (4 weeks) · Later.
+- Impact line: fewer wrong-medicine incidents, better adherence at home.
+- Crimson ask bar: pilot with 50 patients at one clinic + pharmacist review.
+- Closing line: "Medsathi — all info in one app."
 
 CLOSING RULE
-Slide 7 ends with the tagline: "Medsathi — all info in one app."
-Exactly 7 slides. Nothing else.
+Exactly 7 slides, no appendix, no thank-you slide. Slide 7 ends on the tagline.
 ```
 
 ---
@@ -158,3 +155,16 @@ Exactly 7 slides. Nothing else.
 - Keys: on-device entry, CI secrets → git-ignored `www/config.js`, env vars on the backend
 - GitHub Actions builds the APK on every push to `main` (≈4 min), artifact `Medsathi-debug-apk`
 - Brand: white heart + ECG pulse on crimson squircle, launcher icons for every density
+
+## Built deck
+
+A generated copy lives in Google Slides, built directly against this spec:
+
+**https://docs.google.com/presentation/d/1Cwvio7XVHDpZ-Jg82-h4OKwGjjz3de0So3DiifI88eg/edit**
+
+- 7 slides, 16:9, every element a real shape or text box (fully editable, no placeholder junk)
+- Slide 1 full-bleed crimson with a ghosted heart mark and three chip pills
+- Slides 2–7 share one grid: kicker, 27pt headline, crimson rule, 3-column card row,
+  coloured result/ask bar, footer with tagline and slide number
+- Slide 5 carries a 4-step chevron pipeline (Code → GitHub Actions → APK → Install)
+- Speaker notes on every slide, starting with "SAY THIS:" — one line of delivery coaching each
