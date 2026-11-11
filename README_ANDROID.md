@@ -41,9 +41,50 @@ The app is now **Medsathi — all info in one app**.
 - **App palette:** the UI stays teal (`#005264` primary) for calm, readable
   medical screens — the crimson mark is the brand accent.
 
-## Build with GitHub Actions
+## Build the APK from GitHub (no computer setup needed)
 
-Push the project to GitHub. The workflow at `.github/workflows/build-apk.yml` will:
+Everything happens on GitHub's servers. You only need a browser or the GitHub app.
+
+**1. Add your API keys once** (optional but recommended — this is what makes the
+downloaded APK work with no setup)
+
+Repo → **Settings** → **Secrets and variables** → **Actions** → **New repository
+secret**, and add three secrets:
+
+| Name | Value |
+|---|---|
+| `TINYFISH_API_KEY` | your TinyFish key |
+| `OPENFDA_API_KEY` | your OpenFDA key |
+| `GEMINI_API_KEY` | your Google AI Studio key |
+
+**2. Start a build**
+
+- Repo → **Actions** tab (top bar).
+- Left sidebar → **Build Medsathi APK**.
+- Click **Run workflow** (right side), choose the branch
+  `arena/63a129af-curamed-android-2nd` or `main`, then **Run workflow**.
+- A run appears with a yellow dot → wait ~6–10 minutes for the green tick.
+
+The workflow also runs automatically on any push to `main`.
+
+**3. Download the APK**
+
+- Open the finished run → scroll to **Artifacts** at the bottom.
+- Download **Medsathi-debug-apk** (a `.zip`).
+- Unzip it → you get `app-debug.apk`.
+- Copy it to the phone, tap it, and allow **Install unknown apps** when Android asks.
+
+**4. Install and open**
+
+If Play Protect warns you, choose **Install anyway** — that warning appears for any
+unsigned debug APK. The icons, logo, keys and all features are already inside.
+
+**If the build fails:** open the red step, read the last 20 lines, and check that
+`package.json` dependencies installed. The build needs no local Android SDK.
+
+### What the workflow does
+
+The workflow at `.github/workflows/build-apk.yml` will:
 1. Install Node, Java and Android SDK.
 2. Install npm dependencies.
 3. Generate the Capacitor Android project.
