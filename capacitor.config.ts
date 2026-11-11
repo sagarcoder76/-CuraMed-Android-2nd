@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.curamed.medicineassistant',
-  appName: 'CuraMed',
+  appId: 'com.medsathi.app',
+  appName: 'Medsathi',
   webDir: 'www',
   backgroundColor: '#f3faff',
   plugins: {

@@ -1,6 +1,6 @@
-# CuraMed Android — feature-complete build
+# Medsathi Android — all medicine info in one app
 
-This version keeps the existing CuraMed UI and adds working Android features:
+This version keeps the existing Medsathi UI and adds working Android features:
 
 - Native Android camera capture using Capacitor Camera.
 - Gallery image selection.
@@ -18,6 +18,18 @@ This version keeps the existing CuraMed UI and adds working Android features:
 - English, Hindi and Punjabi UI language selection.
 - Notification/alarm status screen.
 
+## Renamed to Medsathi
+
+The app is now **Medsathi — all info in one app**.
+
+- Display name / APK label: `Medsathi` (from `appName` in `capacitor.config.ts`).
+- Package / `appId`: `com.medsathi.app` (was `com.curamed.medicineassistant`).
+  Because the package changed, Android treats this as a new app — the old
+  CuraMed install stays separate and its reminders are not carried over.
+- Internal storage keys (`curamed.reminders.v3`, `curamed.history.v3`,
+  `curamed.profile.v2`, `curamed.api.v2`) were intentionally **not** renamed so
+  nothing breaks for anyone upgrading in place.
+
 ## Build with GitHub Actions
 
 Push the project to GitHub. The workflow at `.github/workflows/build-apk.yml` will:
@@ -27,7 +39,7 @@ Push the project to GitHub. The workflow at `.github/workflows/build-apk.yml` wi
 4. Add the Android exact-alarm permission.
 5. Sync Capacitor plugins.
 6. Build `app-debug.apk`.
-7. Upload it as the `CuraMed-debug-apk` artifact.
+7. Upload it as the `Medsathi-debug-apk` artifact.
 
 ## Important
 
@@ -37,7 +49,7 @@ OCR uses Tesseract.js loaded from a CDN, so first-time scanning needs internet a
 
 ## Optional API keys (live medicine search & AI scan)
 
-CuraMed works fully offline with **no key**. Adding a key is optional and only
+Medsathi works fully offline with **no key**. Adding a key is optional and only
 turns on *live* data. The key is **never hardcoded in the app source**.
 
 ### 1. In the Android app (recommended for the APK)
@@ -108,7 +120,7 @@ npx cap copy android && npx cap sync android
 GitHub Actions build (no key in the repo — recommended version of Option A):
 1. Repo → **Settings → Secrets and variables → Actions → New repository secret**.
 2. Add `TINYFISH_API_KEY`, `OPENFDA_API_KEY`, `GEMINI_API_KEY`.
-3. Run the **Build CuraMed APK** workflow. The step *"Inject API keys into app
+3. Run the **Build Medsathi APK** workflow. The step *"Inject API keys into app
    build"* writes `www/config.js` from those secrets before Capacitor copies the
    web assets, so the APK is self-contained. With no secrets set it simply builds
    an app without built-in keys.

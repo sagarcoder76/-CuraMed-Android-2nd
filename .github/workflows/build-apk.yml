@@ -1,4 +1,4 @@
-name: Build CuraMed APK
+name: Build Medsathi APK
 
 on:
   workflow_dispatch:
@@ -77,6 +77,6 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: CuraMed-debug-apk
+          name: Medsathi-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error

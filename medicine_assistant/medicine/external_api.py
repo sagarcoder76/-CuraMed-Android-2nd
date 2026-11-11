@@ -1,6 +1,6 @@
 """Optional live medicine APIs (RxNav + OpenFDA + Gemini vision).
 
-Design rules (same as the rest of CuraMed):
+Design rules (same as the rest of Medsathi):
 - Works with NO key (RxNav/OpenFDA key-free mode).
 - Never raises to the caller: on any network/API error returns [] / None
   so the app always falls back to the local database.
@@ -17,7 +17,7 @@ TIMEOUT = 8  # seconds — keep the UI responsive
 
 
 def _get_json(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "CuraMed/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "Medsathi/1.0"})
     with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
         return json.loads(resp.read().decode("utf-8", "replace"))
 
@@ -53,9 +53,9 @@ def search_openfda(query):
     q = urllib.parse.quote(query.strip())
     if not q:
         return []
-    url = f"https://api.fda.gov/drug/label.json?search=openfda.brand_name:{q}&limit=5"
-    if OPENFDA_API_KEY:
-        url += f"&api_key={OPENFDA_API_KEY}"
+    # OpenFDA documents api_key as the first parameter, before search/limit.
+    auth = f"api_key={urllib.parse.quote(OPENFDA_API_KEY)}&" if OPENFDA_API_KEY else ""
+    url = f"https://api.fda.gov/drug/label.json?{auth}search=openfda.brand_name:{q}&limit=5"
     try:
         data = _get_json(url)
         out = []
@@ -89,7 +89,7 @@ def search_tinyfish(query, location="IN", language="en"):
         headers={
             "X-API-Key": TINYFISH_API_KEY,
             "Accept": "application/json",
-            "User-Agent": "CuraMed/1.0",
+            "User-Agent": "Medsathi/1.0",
         },
     )
     try:

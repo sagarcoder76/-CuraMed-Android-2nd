@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#f3faff" />
-  <title>CuraMed — Medical Assistant</title>
+  <title>Medsathi — All info in one app</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -53,7 +53,7 @@
     .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24; }
     .fill-icon { font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24; }
 
-    /* CuraMed dark mode — keeps the existing light UI intact and overlays a dark palette. */
+    /* Medsathi dark mode — keeps the existing light UI intact and overlays a dark palette. */
     body.dark-mode { background:#10181b !important; color:#edf5f7 !important; }
     body.dark-mode .bg-surface { background:#10181b !important; }
     body.dark-mode .bg-surface-low { background:#182226 !important; }
@@ -81,11 +81,11 @@
 <body id="app-body" class="min-h-screen bg-surface font-body text-on-surface">
   <header class="fixed top-0 z-50 w-full safe-top border-b border-slate-100/70 bg-surface/85 backdrop-blur-xl">
     <div class="mx-auto flex h-16 max-w-2xl items-center justify-between px-4">
-      <a href="#home" class="flex items-center gap-2" aria-label="CuraMed home">
+      <a href="#home" class="flex items-center gap-2" aria-label="Medsathi home">
         <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
           <span class="material-symbols-outlined fill-icon">health_and_safety</span>
         </div>
-        <span class="font-display text-xl font-bold text-primary">CuraMed</span>
+        <span class="flex flex-col leading-none"><span class="font-display text-xl font-bold text-primary">Medsathi</span><span class="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-outline">All info in one app</span></span>
       </a>
       <div class="flex items-center gap-1">
         <button id="notification-btn" class="flex h-12 w-12 items-center justify-center rounded-full text-on-surface-variant transition hover:bg-surface-high" aria-label="Notifications">
@@ -253,7 +253,7 @@
   <div id="drug-info-modal" class="fixed inset-0 z-[85] hidden items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4">
     <div class="w-full max-w-2xl rounded-t-[2rem] bg-white p-5 shadow-2xl sm:rounded-[2rem]">
       <div class="mb-4 flex items-center justify-between gap-3">
-        <div class="min-w-0"><p class="text-sm font-bold uppercase tracking-wide text-tertiary">CuraMed Library</p><h2 id="drug-info-title" class="font-display text-2xl font-bold truncate">Drug information</h2><p id="drug-info-subtitle" class="text-sm text-on-surface-variant"></p></div>
+        <div class="min-w-0"><p class="text-sm font-bold uppercase tracking-wide text-tertiary">Medsathi Library</p><h2 id="drug-info-title" class="font-display text-2xl font-bold truncate">Drug information</h2><p id="drug-info-subtitle" class="text-sm text-on-surface-variant"></p></div>
         <button id="close-drug-info" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-low"><span class="material-symbols-outlined">close</span></button>
       </div>
       <div id="drug-info-list" class="max-h-[68vh] space-y-3 overflow-auto"></div>
@@ -263,7 +263,7 @@
   <div id="profile-modal" class="fixed inset-0 z-[80] hidden items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4">
     <div class="w-full max-w-2xl rounded-t-[2rem] bg-white p-5 shadow-2xl sm:rounded-[2rem]">
       <div class="mb-4 flex items-center justify-between">
-        <div><p class="text-sm font-bold uppercase tracking-wide text-primary">CuraMed</p><h2 class="font-display text-2xl font-bold" data-i18n="profile">Profile & Settings</h2></div>
+        <div><p class="text-sm font-bold uppercase tracking-wide text-primary">Medsathi</p><h2 class="font-display text-2xl font-bold" data-i18n="profile">Profile & Settings</h2></div>
         <button id="close-profile" class="flex h-11 w-11 items-center justify-center rounded-full bg-surface-low"><span class="material-symbols-outlined">close</span></button>
       </div>
       <div class="space-y-3">
@@ -319,7 +319,7 @@
           </div>
           <p id="api-status-text" class="mt-2 text-xs leading-5 text-on-surface-variant">No keys saved. Search and scan use the on-device library.</p>
         </div>
-        <div class="rounded-2xl border border-slate-200 p-4 text-sm text-on-surface-variant"><b>CuraMed</b> · Medicine Assistant<br/>Reminders, scan, search and history run on this device. Bundled medicine records are demo data.</div>
+        <div class="rounded-2xl border border-slate-200 p-4 text-sm text-on-surface-variant"><b>Medsathi</b> · All info in one app<br/>Reminders, scan, search and history run on this device. Bundled medicine records are demo data.</div>
       </div>
     </div>
   </div>
@@ -327,7 +327,7 @@
   <div id="notification-modal" class="fixed inset-0 z-[90] hidden items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4">
     <div class="w-full max-w-lg rounded-t-[2rem] bg-white p-5 shadow-2xl sm:rounded-[2rem]">
       <div class="flex items-center justify-between"><h2 class="font-display text-xl font-bold" data-i18n="notifications">Notifications & alarms</h2><button id="close-notification" class="flex h-11 w-11 items-center justify-center rounded-full bg-surface-low"><span class="material-symbols-outlined">close</span></button></div>
-      <p id="notification-detail" class="mt-3 text-sm leading-6 text-on-surface-variant">CuraMed uses Android local notifications for medicine reminders.</p>
+      <p id="notification-detail" class="mt-3 text-sm leading-6 text-on-surface-variant">Medsathi uses Android local notifications for medicine reminders.</p>
       <button id="enable-notifications" class="mt-4 h-12 w-full rounded-full bg-primary font-bold text-white">Enable notifications & exact alarms</button>
     </div>
   </div>
@@ -372,7 +372,7 @@ notificationModal.addEventListener('click',e=>{if(e.target===notificationModal)c
 $('notification-settings').onclick=()=>{closeProfile();openModal(notificationModal);updateNotificationStatus()};
 async function setupNativeNotifications(){
  if(!mobileNotifications){$('notification-status').textContent='Browser preview mode';return;}
- try{await mobileNotifications.createChannel({id:'medicine-reminders',name:'Medicine reminders',description:'CuraMed medicine reminder alarms',importance:5,sound:'default',vibration:true});let p=await mobileNotifications.checkPermissions();if(p.display!=='granted')await mobileNotifications.requestPermissions();if(mobileNotifications.addListener)await mobileNotifications.addListener('localNotificationActionPerformed',ev=>{window.currentReminder=window.reminders.find(r=>r.id===ev.notification?.extra?.reminderId)||window.currentReminder;openReminderModal()});updateNotificationStatus();}catch(e){console.warn(e);$('notification-status').textContent='Permission needs attention';}
+ try{await mobileNotifications.createChannel({id:'medicine-reminders',name:'Medicine reminders',description:'Medsathi medicine reminder alarms',importance:5,sound:'default',vibration:true});let p=await mobileNotifications.checkPermissions();if(p.display!=='granted')await mobileNotifications.requestPermissions();if(mobileNotifications.addListener)await mobileNotifications.addListener('localNotificationActionPerformed',ev=>{window.currentReminder=window.reminders.find(r=>r.id===ev.notification?.extra?.reminderId)||window.currentReminder;openReminderModal()});updateNotificationStatus();}catch(e){console.warn(e);$('notification-status').textContent='Permission needs attention';}
 }
 async function updateNotificationStatus(){if(!mobileNotifications){$('notification-status').textContent='Browser preview mode';return;}try{const p=await mobileNotifications.checkPermissions();let exact='not checked';if(mobileNotifications.checkExactNotificationSetting)exact=(await mobileNotifications.checkExactNotificationSetting()).exact_alarm;$('notification-status').textContent=`Notifications: ${p.display} · Exact alarms: ${exact}`;}catch(e){$('notification-status').textContent='Tap to enable notifications';}}
 $('enable-notifications').onclick=async()=>{if(!mobileNotifications){showToast('Native notifications are available in the Android APK.');return;}try{await mobileNotifications.requestPermissions();if(mobileNotifications.changeExactNotificationSetting)await mobileNotifications.changeExactNotificationSetting();await updateNotificationStatus();await rescheduleAll();showToast('Notification and alarm settings updated.');}catch(e){showToast('Please allow notifications and alarms in Android settings.')}};
@@ -381,7 +381,7 @@ function occurrenceDates(time,mode){const [h,m]=time.split(':').map(Number),now=
 async function cancelReminderNotifications(r){if(!mobileNotifications||!r.notificationIds?.length)return;try{await mobileNotifications.cancel({notifications:r.notificationIds.map(id=>({id}))})}catch(e){}r.notificationIds=[]}
 async function scheduleReminderNotifications(r){
  if(!mobileNotifications||!r.enabled)return;await cancelReminderNotifications(r);
- const dates=occurrenceDates(r.reminder_time,r.repeat_type),ns=dates.map((at,i)=>({id:nid(r.id,i),title:'CuraMed Medicine Reminder',body:`Time to take ${r.medicine_name}${r.dosage?' — '+r.dosage:''}`,schedule:{at,allowWhileIdle:true},channelId:'medicine-reminders',sound:'default',autoCancel:true,foreground:true,extra:{reminderId:r.id}}));
+ const dates=occurrenceDates(r.reminder_time,r.repeat_type),ns=dates.map((at,i)=>({id:nid(r.id,i),title:'Medsathi Medicine Reminder',body:`Time to take ${r.medicine_name}${r.dosage?' — '+r.dosage:''}`,schedule:{at,allowWhileIdle:true},channelId:'medicine-reminders',sound:'default',autoCancel:true,foreground:true,extra:{reminderId:r.id}}));
  try{const result=await mobileNotifications.schedule({notifications:ns});r.notificationIds=ns.map(n=>n.id);saveReminders();if(result.warning)console.warn(result.warning)}catch(e){console.warn(e);showToast('Please enable notifications and exact alarms.')}}
 async function rescheduleAll(){for(const r of window.reminders){if(r.enabled)await scheduleReminderNotifications(r);else await cancelReminderNotifications(r)}}
 function openReminderModal(){openModal(modal);loadReminders()}function closeReminderModal(){closeModal(modal)}
@@ -399,7 +399,7 @@ function openHistoryModal(){openModal(historyModal);loadHistory()}$('close-histo
 function loadHistory(){const box=$('history-list'),rows=readJson(HISTORY_KEY,[]);box.innerHTML=`<div class="mb-3 rounded-2xl bg-primary-light/50 p-4"><p class="text-sm font-bold text-primary">Dose log summary</p><p class="mt-1 text-sm text-on-surface-variant">${rows.filter(x=>x.action==='taken').length} taken · ${rows.filter(x=>x.action==='snoozed').length} snoozed · ${rows.length} total events</p></div>`+(rows.length?rows.map(x=>`<div class="flex items-center justify-between gap-3 rounded-2xl bg-surface-low p-4"><div><p class="font-display font-bold">${esc(x.medicine_name)}</p><p class="text-sm text-on-surface-variant">${esc(x.dosage||'Dose')} · ${esc(x.action)}</p></div><time class="text-xs font-semibold text-outline">${new Date(x.action_time).toLocaleString()}</time></div>`).join(''):'<div class="rounded-2xl bg-surface-low p-5 text-center text-sm text-on-surface-variant">No dose history yet.</div>')}
 $('clear-history-btn').onclick=()=>{if(confirm('Clear all dose history and logs?')){localStorage.removeItem(HISTORY_KEY);loadHistory();renderHistoryStats();showToast('History cleared.')}};
 $('btn-take-now').onclick=()=>{if(!window.currentReminder){openReminderModal();return}logDose(window.currentReminder.id,'taken');$('btn-take-now').innerHTML='<span class="material-symbols-outlined">check_circle</span><span>Recorded!</span>';showToast('Dose recorded.');setTimeout(()=>{$('btn-take-now').innerHTML='<span class="material-symbols-outlined">check</span><span>Take Now</span>'},1800)};
-$('btn-snooze').onclick=async()=>{const r=window.currentReminder;if(!r){showToast('No active dose to snooze.');return}logDose(r.id,'snoozed');if(mobileNotifications){try{await mobileNotifications.schedule({notifications:[{id:nid(r.id,999),title:'CuraMed Snoozed Reminder',body:`Time to take ${r.medicine_name}${r.dosage?' — '+r.dosage:''}`,schedule:{at:new Date(Date.now()+900000),allowWhileIdle:true},channelId:'medicine-reminders',sound:'default',foreground:true}]});showToast('Reminder snoozed for 15 minutes.')}catch(e){showToast('Could not schedule snooze.')}}else showToast('Snoozed for 15 minutes.')};
+$('btn-snooze').onclick=async()=>{const r=window.currentReminder;if(!r){showToast('No active dose to snooze.');return}logDose(r.id,'snoozed');if(mobileNotifications){try{await mobileNotifications.schedule({notifications:[{id:nid(r.id,999),title:'Medsathi Snoozed Reminder',body:`Time to take ${r.medicine_name}${r.dosage?' — '+r.dosage:''}`,schedule:{at:new Date(Date.now()+900000),allowWhileIdle:true},channelId:'medicine-reminders',sound:'default',foreground:true}]});showToast('Reminder snoozed for 15 minutes.')}catch(e){showToast('Could not schedule snooze.')}}else showToast('Snoozed for 15 minutes.')};
 const searchInput=$('medicine-search'),searchResults=$('search-results');
 function norm(v){return String(v||'').toLowerCase().replace(/[^a-z0-9\u0900-\u097f\u0a00-\u0a7f]+/g,' ').replace(/\s+/g,' ').trim()}
 function tokens(v){return norm(v).split(' ').filter(x=>x.length>2)}
@@ -477,10 +477,11 @@ async function tinyfishSearch(q,key){
  }catch(e){console.warn('TinyFish failed',e);return[];}
 }
 async function openfdaSearch(q,key){
- const suffix=key?`&api_key=${encodeURIComponent(key)}`:'';
+ // OpenFDA: api_key goes FIRST, before search/limit.
+ const auth=key?`api_key=${encodeURIComponent(key)}&`:'';
  try{
   for(const field of['brand_name','generic_name']){
-   const r=await apiRequest(`${OPENFDA_BASE}?search=openfda.${field}:${encodeURIComponent(q)}&limit=5${suffix}`);
+   const r=await apiRequest(`${OPENFDA_BASE}?${auth}search=openfda.${field}:${encodeURIComponent(q)}&limit=5`);
    const list=(r&&r.data&&r.data.results)||[];
    if(list.length)return list.map(x=>{const o=x.openfda||{};return{name:(o.brand_name||o.generic_name||[q])[0],generic:(o.generic_name||[''])[0],manufacturer:(o.manufacturer_name||[''])[0],uses:(x.indications_and_usage||[''])[0].slice(0,240),source:'OpenFDA'};});
   }
