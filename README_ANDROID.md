@@ -155,6 +155,39 @@ Do **not** paste a real key into `www/index.html`, `app.py`, or any committed
 file. Anything in the APK or repo is extractable. Use the Settings screen,
 `www/config.js` (git-ignored, injected by CI), or `.env`.
 
+## Symptom checker (text + voice, Hindi / Hinglish / English)
+
+"Not sure what to take?" on the home screen opens the symptom checker. The patient
+can **type or speak** — "sar dard aur halka bukhar 2 din se, kya lu?" — and gets
+plain-language guidance plus buy links.
+
+**How it works**
+
+1. **Speech input.** Web Speech API (`hi-IN` by default, `en-IN` selectable) when
+   the WebView supports it. Otherwise the app records 6 seconds of audio and has
+   Gemini transcribe it — so voice works in the APK with only an AI Studio key.
+2. **Language normalisation.** Devanagari input is normalised to English clinical
+   keywords through Gemini when a key is present, so Hindi and Hinglish both match.
+3. **Matching.** `www/symptoms.json` holds 15 common complaints with English,
+   Hindi and Hinglish keywords. Scoring de-weights generic words like “dard” so
+   the wrong condition is not suggested.
+4. **Answer.** Each match shows what helps at home, OTC options with dose guidance
+   ("ask a pharmacist" for anything not OTC), when to see a doctor, and the source.
+5. **Buy links.** Every suggested medicine, every search result, every scan match
+   and the drug-info sheet carry **Tata 1mg · PharmEasy · Netmeds** links.
+   Medsathi earns nothing from these and is not a pharmacy.
+
+**Safety rails**
+
+- A 39-keyword emergency list (chest pain, breathlessness, fainting, stroke signs,
+  seizures, severe bleeding, poisoning) short-circuits everything: the app shows
+  **Call 108 / 112** and refuses to suggest any medicine.
+- Every screen states it is general information, not a diagnosis, and that
+  children, pregnancy and long-term illness need a professional.
+- Prescription-only items are labelled *Ask pharmacist* rather than dosed.
+- No symptom text is stored; it is processed on the device and only sent to the
+  API you configured.
+
 ## Medicine search and scan
 The Android build includes Capacitor Camera 8.2.4 and ML Kit Text Recognition 8.2.0. Search opens a full medicine information card showing uses, administration, common side effects, important precautions, interactions, storage and the bundled data source. Scan captures a label and runs on-device OCR when the native plugin is available, then fuzzy-matches the detected text against `www/medicines.json`. The bundled records remain demo/unverified data.
 

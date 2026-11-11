@@ -125,6 +125,16 @@
       <div id="search-results" class="relative z-30 mt-2 hidden max-h-[70vh] overflow-auto rounded-2xl bg-white shadow-card ring-1 ring-slate-200/70"></div>
     </section>
 
+    <!-- Symptom checker entry -->
+    <button id="symptom-open" class="mb-5 flex w-full items-center gap-3 rounded-3xl bg-gradient-to-br from-[#0A7285] to-[#05414F] p-4 text-left shadow-card transition active:scale-[.99]">
+      <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-white"><span class="material-symbols-outlined fill-icon text-[26px]">stethoscope</span></span>
+      <span class="min-w-0 flex-1">
+        <span class="block font-display text-base font-bold text-white">Not sure what to take?</span>
+        <span class="block text-xs text-white/80">Describe your symptom by voice or text — Hindi, Hinglish or English</span>
+      </span>
+      <span class="material-symbols-outlined shrink-0 text-white/80">chevron_right</span>
+    </button>
+
     <!-- Next dose -->
     <section class="mb-5 overflow-hidden rounded-3xl bg-surface-card shadow-card ring-1 ring-slate-100">
       <div class="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-2.5">
@@ -362,6 +372,36 @@
     </div>
   </div>
 
+
+  <div id="symptom-modal" class="fixed inset-0 z-[92] hidden items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+    <div class="flex max-h-[92vh] w-full max-w-2xl flex-col rounded-t-[2rem] bg-white shadow-2xl sm:rounded-[2rem]">
+      <div class="flex items-center justify-between gap-3 border-b border-slate-100 p-5 pb-4">
+        <div class="min-w-0"><p class="text-xs font-bold uppercase tracking-wide text-primary">Symptom checker</p><h2 class="font-display text-2xl font-bold">How are you feeling?</h2></div>
+        <button id="close-symptom" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-low"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5">
+        <div class="flex items-start gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-900">
+          <span class="material-symbols-outlined text-[18px] text-amber-600">warning</span>
+          <span>General guidance only — not a diagnosis. For chest pain, breathlessness, fainting or heavy bleeding, seek emergency care immediately.</span>
+        </div>
+
+        <label for="symptom-input" class="mt-4 block text-xs font-bold uppercase tracking-wide text-outline">Describe your symptom</label>
+        <div class="mt-1 rounded-2xl bg-surface-low p-3 ring-1 ring-slate-200 focus-within:ring-2 focus-within:ring-primary/30">
+          <textarea id="symptom-input" rows="3" placeholder="e.g. sar dard aur halka bukhar 2 din se, kya lu?" class="w-full resize-none bg-transparent text-sm outline-none placeholder:text-outline"></textarea>
+          <div class="mt-2 flex items-center gap-2">
+            <button id="symptom-mic" class="flex h-10 items-center gap-1.5 rounded-full bg-white px-3 text-xs font-bold text-primary ring-1 ring-slate-200 active:scale-95"><span class="material-symbols-outlined text-[18px]">mic</span><span id="symptom-mic-label">Speak</span></button>
+            <select id="symptom-lang" class="h-10 rounded-full bg-white px-3 text-xs font-bold text-on-surface-variant ring-1 ring-slate-200 outline-none"><option value="hi-IN">हिन्दी / Hinglish</option><option value="en-IN">English</option></select>
+            <button id="symptom-check" class="ml-auto flex h-10 items-center gap-1.5 rounded-full bg-primary px-4 text-xs font-bold text-white active:scale-95"><span class="material-symbols-outlined text-[18px]">search_check</span>Check</button>
+          </div>
+        </div>
+        <div class="mt-2 flex flex-wrap gap-1.5" id="symptom-chips"></div>
+
+        <div id="symptom-results" class="mt-4 space-y-3"></div>
+        <p class="mt-4 text-center text-[11px] leading-5 text-outline">Medsathi never prescribes. Always confirm with a doctor or pharmacist, especially for children, pregnancy or long-term illness.</p>
+      </div>
+    </div>
+  </div>
+
   <div id="notification-modal" class="fixed inset-0 z-[90] hidden items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4">
     <div class="w-full max-w-lg rounded-t-[2rem] bg-white p-5 shadow-2xl sm:rounded-[2rem]">
       <div class="flex items-center justify-between"><h2 class="font-display text-xl font-bold" data-i18n="notifications">Notifications & alarms</h2><button id="close-notification" class="flex h-11 w-11 items-center justify-center rounded-full bg-surface-low"><span class="material-symbols-outlined">close</span></button></div>
@@ -478,6 +518,170 @@ function loadHistory(){const box=$('history-list'),rows=readJson(HISTORY_KEY,[])
 $('clear-history-btn').onclick=()=>{if(confirm('Clear all dose history and logs?')){localStorage.removeItem(HISTORY_KEY);loadHistory();renderHistoryStats();showToast('History cleared.')}};
 $('btn-take-now').onclick=()=>{if(!window.currentReminder){openReminderModal();return}logDose(window.currentReminder.id,'taken');$('btn-take-now').innerHTML='<span class="material-symbols-outlined">check_circle</span><span>Recorded!</span>';showToast('Dose recorded.');setTimeout(()=>{$('btn-take-now').innerHTML='<span class="material-symbols-outlined">check</span><span>Take Now</span>'},1800)};
 $('btn-snooze').onclick=async()=>{const r=window.currentReminder;if(!r){showToast('No active dose to snooze.');return}logDose(r.id,'snoozed');if(mobileNotifications){try{await mobileNotifications.schedule({notifications:[{id:nid(r.id,999),title:'Medsathi Snoozed Reminder',body:`Time to take ${r.medicine_name}${r.dosage?' — '+r.dosage:''}`,schedule:{at:new Date(Date.now()+900000),allowWhileIdle:true},channelId:'medicine-reminders',sound:'default',foreground:true}]});showToast('Reminder snoozed for 15 minutes.')}catch(e){showToast('Could not schedule snooze.')}}else showToast('Snoozed for 15 minutes.')};
+
+/* ================= Buy links ================= */
+const BUY_STORES=[
+ {id:'1mg',label:'Tata 1mg',url:n=>`https://www.1mg.com/search/all?name=${encodeURIComponent(n)}`},
+ {id:'pharmeasy',label:'PharmEasy',url:n=>`https://pharmeasy.in/search/all?name=${encodeURIComponent(n)}`},
+ {id:'netmeds',label:'Netmeds',url:n=>`https://www.netmeds.com/catalogsearch/result?q=${encodeURIComponent(n)}`}
+];
+function buyUrl(name,storeId='1mg'){const s=BUY_STORES.find(x=>x.id===storeId)||BUY_STORES[0];return s.url(String(name||'').trim())}
+function buyLinksHtml(name,cls=''){
+ if(!name)return '';
+ return `<div class="mt-2 flex flex-wrap items-center gap-1.5 ${cls}"><span class="text-[10px] font-bold uppercase tracking-wide text-outline">Buy</span>${BUY_STORES.map(s=>`<a href="${esc(buyUrl(name,s.id))}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-primary ring-1 ring-slate-200 active:scale-95" onclick="event.stopPropagation()">${esc(s.label)}<span class="material-symbols-outlined text-[13px]">open_in_new</span></a>`).join('')}</div>`;
+}
+
+/* ================= Symptom checker (text + voice, Hinglish aware) ================= */
+let SYMPTOM_DB=null,speechRec=null,recorder=null,recordChunks=[];
+const SYMPTOM_CHIPS=['Bukhar 2 din se','Sar dard','Khansi aur zukam','Pet dard / dast','Acidity / jalan','Gala kharab','Khujli / allergy','Period dard'];
+function normSymptom(v){return String(v||'').toLowerCase().replace(/[.,!?;:"'()\[\]]/g,' ').replace(/\s+/g,' ').trim()}
+/* Words too generic to prove a match on their own ("dard" appears in dozens of
+   complaints), so they are only used when the whole phrase matches. */
+const SYM_STOP=new Set(['dard','pain','hai','hain','me','mein','se','aur','ka','ki','ko','ho','raha','rahi','kya','lu','lena','and','the','for','with','from','have','has','problem','samasya']);
+function symptomScore(cond,text){
+ const t=normSymptom(text); if(!t)return 0;
+ const words=t.split(' ').filter(Boolean);
+ let score=0;
+ cond.keywords.forEach(k=>{
+  const kk=normSymptom(k); if(!kk)return;
+  if(t.includes(kk)) score+=kk.includes(' ')?16:10;
+  else if(kk.length>=5&&!SYM_STOP.has(kk)){
+   if(words.some(w=>w.length>=5&&!SYM_STOP.has(w)&&(kk.includes(w)||w.includes(kk)))) score+=5;
+  }
+ });
+ return score;
+}
+function isEmergency(text){
+ const t=normSymptom(text);
+ return (SYMPTOM_DB?.emergency?.keywords||[]).some(k=>{const kk=normSymptom(k);return kk&&t.includes(kk)});
+}
+function renderSymptomResults(text){
+ const box=$('symptom-results'); if(!box)return;
+ if(!text.trim()){box.innerHTML='<div class="rounded-2xl bg-surface-low p-4 text-sm text-on-surface-variant">Type or speak your symptom first.</div>';return}
+ if(isEmergency(text)){
+  box.innerHTML=`<div class="rounded-2xl border-2 border-red-200 bg-red-50 p-4"><div class="flex items-center gap-2 text-red-700"><span class="material-symbols-outlined fill-icon">emergency</span><b class="font-display text-base">This needs emergency care</b></div><p class="mt-2 text-sm leading-6 text-red-800">${esc(SYMPTOM_DB.emergency.message)}</p><div class="mt-3 flex gap-2"><a href="tel:108" class="flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-red-600 font-bold text-white"><span class="material-symbols-outlined text-[18px]">call</span>Call 108</a><a href="tel:112" class="flex h-11 items-center justify-center rounded-full bg-white px-4 font-bold text-red-700 ring-1 ring-red-200">112</a></div><p class="mt-3 text-xs leading-5 text-red-700">Medsathi will not suggest medicines for an emergency.</p></div>`;
+  return;
+ }
+ const matches=(SYMPTOM_DB?.conditions||[]).map(c=>({c,score:symptomScore(c,text)})).filter(x=>x.score>=10).sort((a,b)=>b.score-a.score).slice(0,3);
+ if(!matches.length){
+  box.innerHTML=`<div class="rounded-2xl bg-surface-low p-4"><p class="font-display font-bold">I could not match that to a common symptom</p><p class="mt-1 text-sm leading-6 text-on-surface-variant">Try simpler words — for example “bukhar”, “sar dard”, “khansi”, “dast” or “jalan”. You can also search a medicine directly.</p><button onclick="closeSymptom();document.getElementById('medicine-search').focus();window.scrollTo({top:0})" class="mt-3 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white">Search medicines instead</button></div>`;
+  return;
+ }
+ box.innerHTML=matches.map(({c,score})=>`
+  <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+    <div class="flex items-center justify-between gap-2 border-b border-slate-100 bg-surface-low/60 px-4 py-2.5">
+      <b class="font-display text-base">${esc(c.condition)}</b>
+      <span class="rounded-full bg-primary-light px-2 py-0.5 text-[10px] font-bold text-primary">${score>=16?'likely':'possible'}</span>
+    </div>
+    <div class="p-4">
+      <p class="text-sm leading-6 text-on-surface-variant"><b class="text-on-surface">What helps: </b>${esc(c.advice)}</p>
+      <p class="mt-3 text-xs font-bold uppercase tracking-wide text-outline">Options you can ask a pharmacist about</p>
+      <div class="mt-2 space-y-2">
+        ${(c.medicines||[]).map(m=>`
+          <div class="rounded-xl bg-surface-low p-3">
+            <div class="flex items-start justify-between gap-2">
+              <b class="text-sm">${esc(m.name)}</b>
+              ${m.otc?'<span class="shrink-0 rounded-full bg-secondary-light px-2 py-0.5 text-[10px] font-bold text-secondary">OTC</span>':'<span class="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">Ask pharmacist</span>'}
+            </div>
+            <p class="mt-0.5 text-xs text-on-surface-variant">${esc(m.why)}</p>
+            <p class="mt-1 text-xs leading-5 text-on-surface-variant"><b>How much: </b>${esc(m.dose)}</p>
+            ${buyLinksHtml(m.name)}
+          </div>`).join('')}
+      </div>
+      <p class="mt-3 rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-900"><b>See a doctor if: </b>${esc(c.seeDoctorIf)}</p>
+      <p class="mt-2 text-[11px] text-outline">Source: ${esc((c.sources||[]).join(' · '))}</p>
+    </div>
+  </div>`).join('');
+}
+async function runSymptomCheck(){
+ const raw=$('symptom-input').value.trim();
+ const btn=$('symptom-check');
+ if(!SYMPTOM_DB){showToast('Symptom data still loading…');return}
+ if(!raw){showToast('Describe your symptom first.');return}
+ btn.disabled=true;const original=btn.innerHTML;
+ btn.innerHTML='<span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>Checking';
+ try{
+  let text=raw;
+  if(geminiEnabled()&&/[^\x00-\x7F]/.test(raw)){          // Hindi script → normalise to English keywords
+   const norm=await normaliseSymptom(raw);
+   if(norm)text=raw+' '+norm;
+  }
+  renderSymptomResults(text);
+ }finally{btn.disabled=false;btn.innerHTML=original;}
+}
+async function normaliseSymptom(text){
+ try{
+  const r=await apiRequest(`${GEMINI_BASE}?key=${encodeURIComponent(apiKeys().gemini)}`,{method:'POST',headers:{'Content-Type':'application/json'},
+   body:{contents:[{parts:[{text:`A patient in India describes symptoms in Hindi/Hinglish: "${text}". Reply with ONLY 3-8 short English medical keywords, comma separated, no explanation.`}]}]}});
+  return (r?.data?.candidates?.[0]?.content?.parts?.[0]?.text||'').replace(/\n/g,' ').slice(0,200);
+ }catch(e){return ''}
+}
+/* ---- voice input: Web Speech first, Gemini audio transcription as fallback ---- */
+function canUseSpeech(){return !!(window.SpeechRecognition||window.webkitSpeechRecognition)}
+async function startVoice(){
+ const label=$('symptom-mic-label'),btn=$('symptom-mic');
+ if(speechRec){try{speechRec.stop()}catch(e){};speechRec=null;label.textContent='Speak';return}
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(SR){
+  try{
+   speechRec=new SR();
+   speechRec.lang=$('symptom-lang').value||'hi-IN';
+   speechRec.interimResults=true;speechRec.continuous=false;speechRec.maxAlternatives=1;
+   label.textContent='Listening…';
+   speechRec.onresult=ev=>{
+    let t='';for(let i=0;i<ev.results.length;i++)t+=ev.results[i][0].transcript;
+    $('symptom-input').value=t.trim();
+   };
+   speechRec.onerror=e=>{showToast(e.error==='not-allowed'?'Microphone permission needed.':'Voice input failed — type instead.');label.textContent='Speak';speechRec=null};
+   speechRec.onend=()=>{label.textContent='Speak';speechRec=null;if($('symptom-input').value.trim())runSymptomCheck()};
+   speechRec.start();return;
+  }catch(e){speechRec=null;label.textContent='Speak'}
+ }
+ if(!navigator.mediaDevices?.getUserMedia){showToast('Voice is not available on this device — please type.');return}
+ if(!geminiEnabled()){showToast('Add your AI Studio key in Profile → API keys to use voice here.');return}
+ try{
+  const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+  recorder=new MediaRecorder(stream);recordChunks=[];
+  label.textContent='Listening…';btn.classList.add('bg-red-50','text-red-600');
+  recorder.ondataavailable=e=>{if(e.data.size)recordChunks.push(e.data)};
+  recorder.onstop=async()=>{
+   stream.getTracks().forEach(t=>t.stop());btn.classList.remove('bg-red-50','text-red-600');label.textContent='Speak';
+   const blob=new Blob(recordChunks,{type:recorder.mimeType||'audio/webm'});
+   if(blob.size<1000){showToast('Nothing recorded — try again.');return}
+   $('symptom-input').value='';showToast('Transcribing…');
+   const b64=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(',')[1]);fr.readAsDataURL(blob)});
+   const txt=await transcribeAudio(b64,blob.type||'audio/webm');
+   if(txt){$('symptom-input').value=txt;runSymptomCheck()}else showToast('Could not transcribe — please type.');
+  };
+  recorder.start();
+  setTimeout(()=>{if(recorder&&recorder.state==='recording')recorder.stop()},6000);
+ }catch(e){showToast('Microphone permission needed.');label.textContent='Speak'}
+}
+async function transcribeAudio(b64,mime){
+ try{
+  const r=await apiRequest(`${GEMINI_BASE}?key=${encodeURIComponent(apiKeys().gemini)}`,{method:'POST',headers:{'Content-Type':'application/json'},
+   body:{contents:[{parts:[
+    {text:'Transcribe this short voice note exactly as spoken. It is a patient describing symptoms in Hindi, Hinglish or English. Reply with only the transcript.'},
+    {inline_data:{mime_type:mime,data:b64}}]}]}});
+  return (r?.data?.candidates?.[0]?.content?.parts?.[0]?.text||'').trim();
+ }catch(e){return ''}
+}
+function openSymptom(){
+ if(!$('symptom-chips').dataset.ready){
+  $('symptom-chips').innerHTML=SYMPTOM_CHIPS.map(c=>`<button class="rounded-full bg-surface-low px-3 py-1.5 text-xs font-semibold text-on-surface-variant ring-1 ring-slate-200 active:scale-95" data-chip="${esc(c)}">${esc(c)}</button>`).join('');
+  $('symptom-chips').dataset.ready='1';
+  $('symptom-chips').querySelectorAll('[data-chip]').forEach(b=>b.onclick=()=>{$('symptom-input').value=b.dataset.chip;runSymptomCheck()});
+ }
+ const m=$('symptom-modal');if(m){openModal(m);setTimeout(()=>$('symptom-input')?.focus(),120)}
+}
+function closeSymptom(){const m=$('symptom-modal');if(m)closeModal(m);if(recorder&&recorder.state==='recording')recorder.stop()}
+$('symptom-open').onclick=openSymptom;
+$('close-symptom').onclick=closeSymptom;
+$('symptom-modal').addEventListener('click',e=>{if(e.target===$('symptom-modal'))closeSymptom()});
+$('symptom-check').onclick=runSymptomCheck;
+$('symptom-mic').onclick=startVoice;
+$('symptom-input').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();runSymptomCheck()}});
+
 const searchInput=$('medicine-search'),searchResults=$('search-results');
 function norm(v){return String(v||'').toLowerCase().replace(/[^a-z0-9\u0900-\u097f\u0a00-\u0a7f]+/g,' ').replace(/\s+/g,' ').trim()}
 function tokens(v){return norm(v).split(' ').filter(x=>x.length>2)}
@@ -601,11 +805,11 @@ async function testGeminiKey(key){
  }catch(e){console.warn('Gemini test failed',e);return false;}
 }
 function renderLiveRows(rows){
- return rows.map(x=>`<div class="flex w-full items-start gap-3 border-t border-slate-100 p-4 text-left"><span class="material-symbols-outlined text-secondary">cloud</span><span class="min-w-0 flex-1"><b>${esc(x.name)}</b><small class="block text-outline">${esc([x.generic&&x.generic!==x.name?x.generic:'',x.manufacturer||'',x.source].filter(Boolean).join(' · '))}</small>${x.uses?`<small class="mt-1 block text-xs leading-5 text-on-surface-variant">${esc(x.uses)}</small>`:''}${x.url?`<button onclick="window.open('${esc(x.url)}','_blank')" class="mt-1 text-xs font-bold text-primary underline">Open source</button>`:''}</span></div>`).join('');
+ return rows.map(x=>`<div class="flex w-full items-start gap-3 border-t border-slate-100 p-4 text-left"><span class="material-symbols-outlined text-secondary">cloud</span><span class="min-w-0 flex-1"><b>${esc(x.name)}</b><small class="block text-outline">${esc([x.generic&&x.generic!==x.name?x.generic:'',x.manufacturer||'',x.source].filter(Boolean).join(' · '))}</small>${x.uses?`<small class="mt-1 block text-xs leading-5 text-on-surface-variant">${esc(x.uses)}</small>`:''}${x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener noreferrer" class="mt-1 inline-block text-xs font-bold text-primary underline">Open source</a>`:''}${x.buyable!==false?buyLinksHtml(x.name):''}</span></div>`).join('');
 }
 function renderSearchResults(q){
  const rows=medicines.map(m=>({m,score:medicineScore(m,q)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,8).map(x=>x.m);
- const localHtml=rows.length?rows.map(x=>`<button onclick="showMedicine(${x.id})" class="flex w-full items-center gap-3 p-4 text-left hover:bg-surface-low"><span class="material-symbols-outlined text-primary">medication</span><span class="min-w-0"><b>${esc(x.medicine_name)}</b><small class="block text-outline">${esc(x.brand_name||'')} · ${esc(x.generic_name||'')}</small></span><span class="material-symbols-outlined ml-auto text-outline">chevron_right</span></button>`).join(''):'';
+ const localHtml=rows.length?rows.map(x=>`<button onclick="showMedicine(${x.id})" class="flex w-full items-start gap-3 p-4 text-left hover:bg-surface-low"><span class="material-symbols-outlined text-primary">medication</span><span class="min-w-0 flex-1"><b>${esc(x.medicine_name)}</b><small class="block text-outline">${esc(x.brand_name||'')} · ${esc(x.generic_name||'')}</small>${buyLinksHtml(x.medicine_name)}</span><span class="material-symbols-outlined ml-auto text-outline">chevron_right</span></button>`).join(''):'';
  const emptyLocal=rows.length?'':'<div class="p-4 text-sm text-on-surface-variant">No match in the on-device library. Try the generic name or brand.</div>';
  searchResults.innerHTML=(localHtml||emptyLocal)+(liveEnabled()?`<div id="live-search-block" class="hidden"><div class="flex items-center gap-2 bg-surface-low px-4 py-2 text-xs font-bold uppercase tracking-wide text-outline"><span class="material-symbols-outlined text-base text-secondary">cloud</span>Live results</div><div id="live-search-rows"></div></div>`:'');
  searchResults.classList.remove('hidden');
@@ -648,6 +852,12 @@ function openMedicineInfo(x){
  $('drug-info-subtitle').textContent=[x.brand_name,x.generic_name,x.strength].filter(Boolean).join(' · ');
  const precautions=[x.pregnancy_warning,x.breastfeeding_warning,x.children_warning,x.elderly_warning,x.kidney_warning,x.liver_warning].filter(Boolean);
  $('drug-info-list').innerHTML=`
+ <div class="rounded-2xl bg-secondary-light/50 p-4">
+   <p class="text-sm font-bold text-secondary">Where to buy</p>
+   <p class="mt-0.5 text-xs text-on-surface-variant">Check the pack and batch with the seller. Prices vary by store.</p>
+   <div class="mt-2 flex flex-wrap gap-2">${BUY_STORES.map(st=>`<a href="${esc(buyUrl(x.medicine_name,st.id))}" target="_blank" rel="noopener noreferrer" class="flex h-10 items-center gap-1.5 rounded-full bg-white px-4 text-sm font-bold text-primary ring-1 ring-slate-200 active:scale-95">${esc(st.label)}<span class="material-symbols-outlined text-[16px]">open_in_new</span></a>`).join('')}</div>
+   <p class="mt-2 text-[11px] leading-4 text-outline">Medsathi is not a pharmacy and earns nothing from these links. Prescription medicines need a valid prescription.</p>
+ </div>
  <div class="rounded-2xl bg-primary-light/40 p-4"><p class="text-sm font-bold text-primary">${safeText(x.category)}</p><p class="mt-2 text-sm leading-6 text-on-surface-variant">${safeText(x.general_usage)}</p></div>
  <section class="drug-info-section rounded-2xl bg-surface-low p-4"><h3 class="font-bold">${safeText(t.uses)}</h3><ul class="mt-2 list-disc space-y-1 pl-5 text-sm leading-6">${bullets(x.common_uses)}</ul></section>
  <section class="drug-info-section rounded-2xl bg-surface-low p-4"><h3 class="font-bold">${safeText(t.howToTake)}</h3><p class="mt-2 text-sm leading-6 text-on-surface-variant">${safeText(x.administration)}</p></section>
@@ -820,7 +1030,7 @@ async function processScan(src, nativePath=''){
 function matchScanText(){
   const text=$('ocr-text').value.trim();currentScanText=text;
   const rows=medicines.map(m=>({m,score:medicineOCRScore(m,text)})).filter(x=>x.score>=10).sort((a,b)=>b.score-a.score).slice(0,5).map(x=>x.m);
-  $('scan-matches').innerHTML=rows.length?'<p class="text-sm font-bold text-primary">Best matches from the local medicine library</p>'+rows.map(x=>`<button onclick="selectScanMedicine(${x.id})" class="flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-left ring-1 ring-slate-200"><span class="material-symbols-outlined text-primary">medication</span><span><b>${esc(x.medicine_name)}</b><small class="block text-outline">${esc(x.brand_name||'')} · ${esc(x.generic_name||'')}</small></span><span class="material-symbols-outlined ml-auto text-outline">info</span></button>`).join(''):(liveEnabled()?'<div class="rounded-2xl bg-white p-3 text-sm text-on-surface-variant ring-1 ring-slate-200">Searching the live medicine API…</div>':'<div class="rounded-2xl bg-white p-3 text-sm text-on-surface-variant ring-1 ring-slate-200">Text was detected, but no medicine in the bundled library matched it. You can edit the detected text and search again.</div>');
+  $('scan-matches').innerHTML=rows.length?'<p class="text-sm font-bold text-primary">Best matches from the local medicine library</p>'+rows.map(x=>`<button onclick="selectScanMedicine(${x.id})" class="flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-left ring-1 ring-slate-200"><span class="material-symbols-outlined text-primary">medication</span><span class="min-w-0 flex-1"><b>${esc(x.medicine_name)}</b><small class="block text-outline">${esc(x.brand_name||'')} · ${esc(x.generic_name||'')}</small>${buyLinksHtml(x.medicine_name)}</span><span class="material-symbols-outlined ml-auto text-outline">info</span></button>`).join(''):(liveEnabled()?'<div class="rounded-2xl bg-white p-3 text-sm text-on-surface-variant ring-1 ring-slate-200">Searching the live medicine API…</div>':'<div class="rounded-2xl bg-white p-3 text-sm text-on-surface-variant ring-1 ring-slate-200">Text was detected, but no medicine in the bundled library matched it. You can edit the detected text and search again.</div>');
   if(liveEnabled()&&text){
     const first=text.split(/\n/).map(x=>x.trim()).find(Boolean)||'';
     if(first.length>2){
@@ -855,7 +1065,8 @@ $('scan-file-input').onchange=async e=>{const f=e.target.files?.[0];if(f)await p
 $('close-scan').onclick=()=>closeModal(scanModal);scanModal.addEventListener('click',e=>{if(e.target===scanModal)closeModal(scanModal)});
 document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{const a=b.dataset.action;if(a==='reminder')openReminderModal();else if(a==='history')openHistoryModal();else if(a==='profile')openProfile();else if(a==='scan')openScan();else if(a==='search'){searchInput.focus();window.scrollTo({top:0,behavior:'smooth'})}else if(a==='drug-info'){openDrugLibrary()}});
 $('adherence-card').onclick=openHistoryModal;$('camera-search').onclick=openScan;
-async function init(){seedApiKeys();updateApiUi();try{medicines=await fetch('medicines.json',{cache:'no-store'}).then(r=>r.json());if(!Array.isArray(medicines))medicines=[]}catch(e){console.warn('Medicine database failed to load',e);medicines=[];setTimeout(()=>showToast('Medicine library could not be loaded.'),800)}const p=profile();applyTheme();applyLanguage();renderHistoryStats();renderHome();await setupNativeNotifications();await loadReminders();renderHome();await rescheduleAll()}
+async function loadSymptoms(){try{SYMPTOM_DB=await fetch('symptoms.json',{cache:'no-store'}).then(r=>r.json())}catch(e){console.warn('Symptom data failed to load',e);SYMPTOM_DB=null}}
+async function init(){seedApiKeys();updateApiUi();loadSymptoms();try{medicines=await fetch('medicines.json',{cache:'no-store'}).then(r=>r.json());if(!Array.isArray(medicines))medicines=[]}catch(e){console.warn('Medicine database failed to load',e);medicines=[];setTimeout(()=>showToast('Medicine library could not be loaded.'),800)}const p=profile();applyTheme();applyLanguage();renderHistoryStats();renderHome();await setupNativeNotifications();await loadReminders();renderHome();await rescheduleAll()}
 init();
 </script>
 </body>
