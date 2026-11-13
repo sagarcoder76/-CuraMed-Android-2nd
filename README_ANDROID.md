@@ -45,8 +45,12 @@ The app is now **Medsathi — all info in one app**.
 
 Everything happens on GitHub's servers. You only need a browser or the GitHub app.
 
-**1. Add your API keys once** (optional but recommended — this is what makes the
-downloaded APK work with no setup)
+**1. Add your API keys once** (optional — search and AI scan work without them)
+
+> **Supabase needs nothing here.** Login and cloud sync are pre-connected through
+> the committed `www/config.default.js` (public project URL + anon key), so a fresh
+> install can sign in and back up immediately. Add the two `SUPABASE_*` secrets only
+> if you want to point a build at a **different** Supabase project.
 
 Repo → **Settings** → **Secrets and variables** → **Actions** → **New repository
 secret**, and add three secrets:
@@ -62,7 +66,7 @@ secret**, and add three secrets:
 - Repo → **Actions** tab (top bar).
 - Left sidebar → **Build Medsathi APK**.
 - Click **Run workflow** (right side), choose the branch
-  `arena/63a129af-curamed-android-2nd` or `main`, then **Run workflow**.
+  `main`, then **Run workflow**.
 - A run appears with a yellow dot → wait ~6–10 minutes for the green tick.
 
 The workflow also runs automatically on any push to `main`.
@@ -159,9 +163,11 @@ there are two ways. Pick by how public the app will be.
 
 **Option A — keys compiled into the build (fastest, least safe)**
 
-The app reads `www/config.js` at startup. If no keys are saved on the device yet,
-it copies those keys in once, so a fresh install works instantly. The file is
-git-ignored, so real keys never land in the repository.
+The app reads `www/config.js` (personal keys, git-ignored) and
+`www/config.default.js` (committed defaults) at startup, and merges them. If no
+keys are saved on the device yet, it copies the built-in ones in once, so a fresh
+install works instantly. Only `config.default.js` is committed, and it holds just
+the public Supabase URL + anon key — never a personal search/AI key.
 
 Local build:
 ```bash
@@ -203,9 +209,11 @@ Keys stay on a server; the APK only knows a URL.
    server-side without shipping a new build.
 
 ### Never do this
-Do **not** paste a real key into `www/index.html`, `app.py`, or any committed
-file. Anything in the APK or repo is extractable. Use the Settings screen,
-`www/config.js` (git-ignored, injected by CI), or `.env`.
+Do **not** paste a real key into `www/index.html`, `app.py`, `www/config.default.js`,
+or any committed file. Anything in the APK or repo is extractable. Use the Settings
+screen, `www/config.js` (git-ignored, injected by CI), or `.env`. The single
+exception is the Supabase **anon/publishable** key, which is a public client key and
+is committed on purpose in `www/config.default.js` so the app ships connected.
 
 ## Symptom checker (text + voice, Hindi / Hinglish / English)
 

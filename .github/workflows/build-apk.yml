@@ -34,9 +34,10 @@ jobs:
       - name: Install npm dependencies
         run: npm install
 
-      # Bakes the keys into www/config.js (git-ignored) so the downloaded APK
-      # works with no setup. Set them once in Settings -> Secrets and variables
-      # -> Actions. Missing secrets simply build an app without built-in keys.
+      # Optional: bakes personal API keys / a different Supabase project into
+      # www/config.js (git-ignored). www/config.default.js is committed and
+      # already ships the public Supabase URL + anon key, so login and cloud
+      # sync work even with no secrets. Non-empty values here win.
       - name: Inject API keys into app build
         env:
           TF_KEY: ${{ secrets.TINYFISH_API_KEY }}
@@ -62,7 +63,7 @@ jobs:
             console.log("Injected built-in keys:", Object.keys(keys).filter(k => keys[k]).join(", ") || "(none)");
             console.log("Supabase login:", supabase.url ? "configured" : "not configured (guest mode only)");
           } else {
-            console.log("No API key secrets set - building without built-in keys.");
+            console.log("No API key secrets set - using www/config.default.js (Supabase login pre-connected).");
           }
           '
 
