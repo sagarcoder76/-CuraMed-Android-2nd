@@ -534,8 +534,8 @@ const toast=$('toast');let toastTimer;
 function showToast(message){clearTimeout(toastTimer);toast.textContent=message;toast.classList.remove('opacity-0','-translate-y-4');toast.classList.add('opacity-100','translate-y-0');toastTimer=setTimeout(()=>{toast.classList.add('opacity-0','-translate-y-4');toast.classList.remove('opacity-100','translate-y-0')},2600);}
 const REMINDERS_KEY='curamed.reminders.v3',HISTORY_KEY='curamed.history.v3',PROFILE_KEY='curamed.profile.v2';
 const modal=$('reminder-modal'),historyModal=$('history-modal'),scanModal=$('scan-modal'),profileModal=$('profile-modal'),notificationModal=$('notification-modal'),drugInfoModal=$('drug-info-modal');
-let medicines=[],mobileNotifications=null,cameraPlugin=null,ocrPlugin=null,filesystemPlugin=null,currentScanText='',searchTimer;window.reminders=[];window.currentReminder=null;
-try{const plugins=window.Capacitor?.Plugins||{};mobileNotifications=plugins.LocalNotifications||null;cameraPlugin=plugins.Camera||null;ocrPlugin=plugins.TextRecognition||null;filesystemPlugin=plugins.Filesystem||null;}catch(e){}
+let medicines=[],mobileNotifications=null,cameraPlugin=null,ocrPlugin=null,filesystemPlugin=null,speechPlugin=null,currentScanText='',searchTimer;window.reminders=[];window.currentReminder=null;
+try{const plugins=window.Capacitor?.Plugins||{};mobileNotifications=plugins.LocalNotifications||null;cameraPlugin=plugins.Camera||null;ocrPlugin=plugins.TextRecognition||null;filesystemPlugin=plugins.Filesystem||null;speechPlugin=plugins.SpeechRecognition||null;}catch(e){}
 const I18N={
 en:{profile:'Profile & Settings',language:'Language',darkMode:'Dark mode',notifications:'Notifications & alarms',clearHistory:'Clear history & logs',scan:'Scan Medicine',history:'History & Logs',reminders:'Reminders',drugInfo:'Drug Info',quick:'Quick Actions',upcoming:'Upcoming dose',take:'Take Now',snooze:'Snooze 15m',add:'Add Reminder',search:'Search pills, symptoms, or brands...',goodMorning:'Good morning',noReminder:'No medicine reminder',addStart:'Add a reminder to get started',noDose:'No dose scheduled',care:'Care Suite',scanner:'Medicine scanner',ready:'Ready to scan.',camera:'Camera',gallery:'Gallery',drugLibrary:'Medicine library',howToTake:'How to take / use',sideEffects:'Common side effects',important:'Important precautions',interactions:'Interactions',uses:'Common uses',storage:'Storage',source:'Source',checkWithProfessional:'Check with a doctor or pharmacist before use if any of these apply.',noInfo:'No medicine information found.'},
 hi:{profile:'प्रोफ़ाइल और सेटिंग्स',language:'भाषा',darkMode:'डार्क मोड',notifications:'नोटिफिकेशन और अलार्म',clearHistory:'इतिहास और लॉग साफ़ करें',scan:'दवा स्कैन करें',history:'इतिहास और लॉग',reminders:'रिमाइंडर',drugInfo:'दवा जानकारी',quick:'त्वरित कार्य',upcoming:'अगली खुराक',take:'अभी लिया',snooze:'15 मिनट बाद',add:'रिमाइंडर जोड़ें',search:'दवा, लक्षण या ब्रांड खोजें...',goodMorning:'सुप्रभात',noReminder:'कोई दवा रिमाइंडर नहीं',addStart:'शुरू करने के लिए रिमाइंडर जोड़ें',noDose:'कोई खुराक निर्धारित नहीं',care:'केयर सूट',scanner:'दवा स्कैनर',ready:'स्कैन के लिए तैयार।',camera:'कैमरा',gallery:'गैलरी',drugLibrary:'दवा लाइब्रेरी',howToTake:'कैसे लें / उपयोग करें',sideEffects:'आम साइड इफेक्ट',important:'महत्वपूर्ण सावधानियां',interactions:'इंटरैक्शन',uses:'आम उपयोग',storage:'स्टोरेज',source:'स्रोत',checkWithProfessional:'यदि इनमें से कुछ लागू होता है तो डॉक्टर या फार्मासिस्ट से पूछें।',noInfo:'दवा की जानकारी नहीं मिली।'},
@@ -732,16 +732,72 @@ async function normaliseSymptom(text){
   return (r?.data?.candidates?.[0]?.content?.parts?.[0]?.text||'').replace(/\n/g,' ').slice(0,200);
  }catch(e){return ''}
 }
-/* ---- voice input: Web Speech first, Gemini audio transcription as fallback ---- */
-function canUseSpeech(){return !!(window.SpeechRecognition||window.webkitSpeechRecognition)}
+/* ---- voice input ----
+   Three tiers, best first:
+   1. native on-device recognizer (@capacitor-community/speech-recognition) —
+      what actually works inside the APK, no API key, and Android shows the
+      real microphone permission dialog;
+   2. Web Speech API — Chrome and the desktop preview only, Android WebView
+      ships no implementation, so this tier is never reached on a phone;
+   3. record 6 s and send the clip to Gemini — needs an AI Studio key.
+   Tier 1 was missing entirely, which is why the mic only ever answered
+   "Microphone permission needed." on a real device. */
+let speechNativeBusy=false;
+function canUseSpeech(){return !!(speechPlugin||window.SpeechRecognition||window.webkitSpeechRecognition)}
+function voiceStopNative(){if(speechPlugin&&speechNativeBusy){try{speechPlugin.stop()}catch(e){};speechNativeBusy=false}}
+async function voiceViaNative(lang,label,btn){
+  if(!speechPlugin)return false;
+  let perm=null;
+  try{perm=await speechPlugin.requestPermissions()}catch(e){}
+  if(perm&&perm.permission==='denied'){
+    showToast('Microphone blocked. Allow it in Android Settings → Apps → Medsathi → Permissions.');
+    return true;
+  }
+  let finalText='',finish=null;
+  const finished=new Promise(res=>{finish=res});
+  const subs=[];
+  const off=async()=>{for(const l of subs){try{await l.remove()}catch(e){}}};
+  try{
+    subs.push(await speechPlugin.addListener('partialResults',d=>{
+      const t=(d&&d.matches&&d.matches[0])||'';
+      if(t){finalText=t;$('symptom-input').value=t}
+    }));
+    subs.push(await speechPlugin.addListener('listeningState',d=>{
+      if(d&&d.status==='stopped'&&finish)finish();
+    }));
+  }catch(e){}
+  speechNativeBusy=true;
+  label.textContent='Listening…';
+  btn.classList.add('bg-red-50','text-red-600');
+  try{
+    await speechPlugin.start({language:lang,partialResults:true,popup:false});
+  }catch(e){
+    speechNativeBusy=false;off();
+    btn.classList.remove('bg-red-50','text-red-600');label.textContent='Speak';
+    const msg=String((e&&e.message)||'');
+    if(/denied|permission|not allowed|not authorized/i.test(msg)){showToast('Microphone permission needed.');return true}
+    return false;   // recognizer unavailable — let a lower tier try
+  }
+  setTimeout(async()=>{if(speechNativeBusy){try{await speechPlugin.stop()}catch(e){};speechNativeBusy=false;if(finish)finish()}},12000);
+  await Promise.race([finished,new Promise(r=>setTimeout(r,13000))]);
+  speechNativeBusy=false;off();
+  btn.classList.remove('bg-red-50','text-red-600');label.textContent='Speak';
+  const txt=(finalText||$('symptom-input').value||'').trim();
+  if(txt){$('symptom-input').value=txt;runSymptomCheck()}
+  else showToast('Nothing heard — try again, or type your symptom.');
+  return true;
+}
 async function startVoice(){
  const label=$('symptom-mic-label'),btn=$('symptom-mic');
  if(speechRec){try{speechRec.stop()}catch(e){};speechRec=null;label.textContent='Speak';return}
+ if(speechNativeBusy){voiceStopNative();label.textContent='Speak';return}
+ const lang=$('symptom-lang').value||'hi-IN';
+ if(await voiceViaNative(lang,label,btn))return;
  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
  if(SR){
   try{
    speechRec=new SR();
-   speechRec.lang=$('symptom-lang').value||'hi-IN';
+   speechRec.lang=lang;
    speechRec.interimResults=true;speechRec.continuous=false;speechRec.maxAlternatives=1;
    label.textContent='Listening…';
    speechRec.onresult=ev=>{
@@ -754,7 +810,7 @@ async function startVoice(){
   }catch(e){speechRec=null;label.textContent='Speak'}
  }
  if(!navigator.mediaDevices?.getUserMedia){showToast('Voice is not available on this device — please type.');return}
- if(!geminiEnabled()){showToast('Add your AI Studio key in Profile → API keys to use voice here.');return}
+ if(!geminiEnabled()){showToast('Voice needs the on-device recogniser or an AI Studio key (Profile → API keys).');return}
  try{
   const stream=await navigator.mediaDevices.getUserMedia({audio:true});
   recorder=new MediaRecorder(stream);recordChunks=[];
@@ -771,7 +827,11 @@ async function startVoice(){
   };
   recorder.start();
   setTimeout(()=>{if(recorder&&recorder.state==='recording')recorder.stop()},6000);
- }catch(e){showToast('Microphone permission needed.');label.textContent='Speak'}
+ }catch(e){
+  const denied=e&&(e.name==='NotAllowedError'||e.name==='SecurityError');
+  showToast(denied?'Microphone blocked. Allow it in Android Settings → Apps → Medsathi → Permissions.':'Could not start the microphone — type instead.');
+  label.textContent='Speak';
+ }
 }
 async function transcribeAudio(b64,mime){
  try{
