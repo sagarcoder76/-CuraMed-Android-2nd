@@ -388,6 +388,10 @@
             <button id="account-signout" class="hidden h-10 flex-1 rounded-xl bg-white font-display text-xs font-extrabold text-accent ring-1 ring-slate-200">Sign out</button>
             <button id="account-setup" class="h-10 rounded-xl bg-white px-3 font-display text-xs font-extrabold text-primary ring-1 ring-slate-200">Setup</button>
           </div>
+          <div id="account-sync-row" class="mt-2 hidden items-center justify-between gap-2 rounded-xl bg-white px-3 py-2 ring-1 ring-slate-100">
+            <p id="sync-status" class="min-w-0 flex-1 truncate text-[11px] font-semibold text-on-surface-variant">Ready to sync</p>
+            <button id="account-sync" class="shrink-0 rounded-lg bg-primary-light px-2.5 py-1 text-[11px] font-extrabold text-primary active:scale-95">Sync now</button>
+          </div>
           <p id="account-note" class="mt-2 text-[11px] leading-4 text-on-surface-variant">Reminders, scans and history stay on this device.</p>
         </div>
         <label class="flex items-center justify-between rounded-2xl bg-surface-low p-4">
@@ -565,11 +569,11 @@ $('close-reminders').onclick=closeReminderModal;modal.addEventListener('click',e
 function renderReminders(){const box=$('reminder-list');if(!window.reminders.length){box.innerHTML='<div class="rounded-2xl bg-surface-low p-5 text-center text-sm text-on-surface-variant">No reminders yet. Add your first medicine alarm above.</div>'}else{box.innerHTML=window.reminders.map(r=>`<div class="flex items-center gap-3 rounded-2xl bg-surface-low p-4"><div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary"><span class="material-symbols-outlined fill-icon">medication</span></div><div class="min-w-0 flex-1"><div class="flex items-center justify-between gap-2"><h3 class="font-display font-bold">${esc(r.medicine_name)}</h3><span class="font-display font-bold text-primary">${r.reminder_time}</span></div><p class="text-sm text-on-surface-variant">${esc(r.dosage||'Dose not specified')} · ${r.repeat_type}</p></div><button onclick="toggleReminder(${r.id},${!r.enabled})" class="h-10 rounded-full px-3 text-xs font-bold ${r.enabled?'bg-secondary-light text-secondary':'bg-surface-high text-outline'}">${r.enabled?'ON':'OFF'}</button><button onclick="deleteReminder(${r.id})" class="flex h-10 w-10 items-center justify-center rounded-full text-outline"><span class="material-symbols-outlined">delete</span></button></div>`).join('')}renderHome()}
 function updateNextDose(){const now=new Date(),active=window.reminders.filter(r=>r.enabled);let best=null,bd=Infinity;active.forEach(r=>{const [h,m]=r.reminder_time.split(':').map(Number);let d=new Date(now);d.setHours(h,m,0,0);if(d<=now)d.setDate(d.getDate()+1);if(r.repeat_type==='weekdays'&&[0,6].includes(d.getDay()))do{d.setDate(d.getDate()+1)}while([0,6].includes(d.getDay()));const delta=d-now;if(delta<bd){bd=delta;best={...r,when:d}}});window.currentReminder=best;const t=I18N[profile().language]||I18N.en;$('next-dose-time').textContent=best?new Intl.DateTimeFormat('en-IN',{hour:'numeric',minute:'2-digit'}).format(best.when):t.noDose;$('next-dose-name').textContent=best?best.medicine_name:t.noReminder;$('next-dose-dosage').textContent=best?(best.dosage||'Dose not specified'):t.addStart;$('dose-actions')?.classList.toggle('hidden',!best);$('dose-actions')?.classList.toggle('flex',!!best);$('dose-empty-cta')?.classList.toggle('hidden',!!best)}
 async function loadReminders(){window.reminders=readJson(REMINDERS_KEY,[]);renderReminders();updateNextDose()}
-async function addReminder(d){const r={id:Date.now(),medicine_name:d.medicine_name.trim(),dosage:(d.dosage||'').trim(),reminder_time:d.reminder_time,repeat_type:['daily','weekdays','once'].includes(d.repeat_type)?d.repeat_type:'daily',enabled:true,created_at:new Date().toISOString(),last_taken:null,notificationIds:[]};window.reminders.push(r);saveReminders();await scheduleReminderNotifications(r);renderReminders();updateNextDose()}
+async function addReminder(d){const r={id:Date.now(),medicine_name:d.medicine_name.trim(),dosage:(d.dosage||'').trim(),reminder_time:d.reminder_time,repeat_type:['daily','weekdays','once'].includes(d.repeat_type)?d.repeat_type:'daily',enabled:true,created_at:new Date().toISOString(),last_taken:null,notificationIds:[]};window.reminders.push(r);saveReminders();await scheduleReminderNotifications(r);renderReminders();updateNextDose();pushReminder(r)}
 $('reminder-form').onsubmit=async e=>{e.preventDefault();const n=$('r-medicine').value.trim(),t=$('r-time').value;if(!n||!t){showToast('Medicine and time are required.');return}await addReminder({medicine_name:n,dosage:$('r-dosage').value,reminder_time:t,repeat_type:$('r-repeat').value});e.target.reset();showToast('Medicine reminder added.')};
-window.toggleReminder=async(id,en)=>{const r=window.reminders.find(x=>x.id===id);if(!r)return;r.enabled=en;if(en)await scheduleReminderNotifications(r);else await cancelReminderNotifications(r);saveReminders();renderReminders();updateNextDose()};
-window.deleteReminder=async id=>{const r=window.reminders.find(x=>x.id===id);if(!r)return;if(!confirm('Delete this reminder?'))return;await cancelReminderNotifications(r);window.reminders=window.reminders.filter(x=>x.id!==id);saveReminders();renderReminders();updateNextDose();showToast('Reminder deleted.')};
-function logDose(id,action){const r=window.reminders.find(x=>x.id===id);if(!r)return;const rows=readJson(HISTORY_KEY,[]);rows.unshift({id:Date.now(),reminder_id:id,medicine_name:r.medicine_name,dosage:r.dosage,action,action_time:new Date().toISOString()});if(action==='taken')r.last_taken=new Date().toISOString();saveHistory(rows);saveReminders();renderHistoryStats();renderHome()}
+window.toggleReminder=async(id,en)=>{const r=window.reminders.find(x=>x.id===id);if(!r)return;r.enabled=en;if(en)await scheduleReminderNotifications(r);else await cancelReminderNotifications(r);saveReminders();renderReminders();updateNextDose();pushReminder(r)};
+window.deleteReminder=async id=>{const r=window.reminders.find(x=>x.id===id);if(!r)return;if(!confirm('Delete this reminder?'))return;await cancelReminderNotifications(r);window.reminders=window.reminders.filter(x=>x.id!==id);saveReminders();renderReminders();updateNextDose();deleteCloudReminder(id);showToast('Reminder deleted.')};
+function logDose(id,action){const r=window.reminders.find(x=>x.id===id);if(!r)return;const rows=readJson(HISTORY_KEY,[]);const event={id:Date.now(),reminder_id:id,medicine_name:r.medicine_name,dosage:r.dosage,action,action_time:new Date().toISOString()};rows.unshift(event);if(action==='taken')r.last_taken=new Date().toISOString();saveHistory(rows);saveReminders();renderHistoryStats();renderHome();pushDose(event);if(action==='taken')pushReminder(r)}
 function dosesScheduledToday(){const now=new Date(),wd=now.getDay(),isWeekend=wd===0||wd===6;return window.reminders.filter(r=>r.enabled).filter(r=>r.repeat_type==='daily'||(r.repeat_type==='weekdays'&&!isWeekend)||r.repeat_type==='once').length}
 function dosesTakenToday(){return readJson(HISTORY_KEY,[]).filter(x=>x.action==='taken'&&new Date(x.action_time).toDateString()===new Date().toDateString()).length}
 function renderHome(){
@@ -1248,6 +1252,8 @@ async function authSignOut(){
   const s=authSession();
   if(s&&s.access_token){try{await sbRequest('/auth/v1/logout',{method:'POST',accessToken:s.access_token})}catch(e){}}
   saveAuthSession(null);
+  saveSyncQueue([]);
+  localStorage.removeItem(SYNC_AT_KEY);
   showToast('Signed out. Your local data is still here.');
   renderAccount();
 }
@@ -1306,12 +1312,17 @@ function renderAccount(){
   if(signin)signin.classList.toggle('hidden',!!u);
   if(signout)signout.classList.toggle('hidden',!u);
   const note=$('account-note');
-  if(note)note.textContent=u?'Profile synced. Reminders and history stay on this device.':(ready?'Sign in to sync your name and language.':'Add your Supabase URL and anon key to enable login.');
+  if(note)note.textContent=u?'Signed in. Reminders and dose log back up to your account.':(ready?'Sign in to back up reminders and sync across phones.':'Add your Supabase URL and anon key to enable login.');
+  const row=$('account-sync-row');
+  if(row){row.classList.toggle('hidden',!u);row.classList.toggle('flex',!!u)}
+  if(u&&typeof setSyncStatus==='function')setSyncStatus();
+  const syncBtn=$('account-sync');
+  if(syncBtn)syncBtn.onclick=()=>{if(typeof syncNow==='function')syncNow(false)};
 }
 if(authScreen){
   $('auth-tab-signin').onclick=()=>setAuthTab('signin');
   $('auth-tab-signup').onclick=()=>setAuthTab('signup');
-  $('auth-guest').onclick=()=>{localStorage.setItem(AUTH_SKIP,'1');closeAuth();showToast('Guest mode — all features stay available offline.');};
+  $('auth-guest').onclick=()=>{localStorage.setItem(AUTH_SKIP,'1');closeAuth();renderAccount();showToast('Guest mode — all features stay available offline.');};
   $('auth-sb-save').onclick=()=>{
     const url=$('auth-sb-url').value.trim(),key=$('auth-sb-key').value.trim();
     if(!/^https?:\/\//.test(url)||key.length<20){authError('Paste the project URL and the anon public key.');return}
@@ -1333,11 +1344,11 @@ if(authScreen){
     try{
       if(authTab==='signup'){
         const sess=await authSignUp(email,pass,name);
-        if(sess){saveAuthSession(sess);await syncProfile();finishAuth();}
+        if(sess){saveAuthSession(sess);await syncProfile();finishAuth();await syncNow(true);}
         else{setAuthTab('signin');showToast('Account created. Check your email to confirm, then sign in.');}
       }else{
         const sess=await authSignIn(email,pass);
-        saveAuthSession(sess);await syncProfile();finishAuth();
+        saveAuthSession(sess);await syncProfile();finishAuth();await syncNow(true);
       }
     }catch(err){authError(prettyAuthError(err))}
     finally{setAuthBusy(false)}
@@ -1354,8 +1365,120 @@ async function initAuth(){
     else await syncProfile();
   }
   renderAccount();
+  if(authSession()){setSyncStatus();setTimeout(()=>syncNow(true),1200)}
   if(!authSession()&&!localStorage.getItem(AUTH_SKIP))openAuth('signin');
 }
+
+
+/* ================= cloud sync: reminders + dose log =================
+   Local storage stays the source of truth so everything works offline. When a
+   session exists, changes are also mirrored to Supabase and a pull happens on
+   launch / sign-in. Failed writes are queued and retried. */
+const SYNCQ_KEY='curamed.syncq.v1', SYNC_AT_KEY='curamed.sync.at', SYNC_UID='curamed.sync.uid';
+function syncQueue(){return readJson(SYNCQ_KEY,[])}
+function saveSyncQueue(q){localStorage.setItem(SYNCQ_KEY,JSON.stringify(q.slice(0,200)))}
+function enqueueSync(op){const q=syncQueue();q.push(op);saveSyncQueue(q)}
+function syncReady(){return !!(authSession()&&sbConfig().ready)}
+function setSyncStatus(text){
+  const el=$('sync-status');if(el)el.textContent=text;
+  const stamp=localStorage.getItem(SYNC_AT_KEY);
+  const sub=$('account-note');
+  if(sub&&authSession())sub.textContent=stamp?('Reminders and dose log synced to your account · '+stamp):'Reminders and dose log sync to your account.';
+}
+function reminderRow(r){
+  const s=authSession();if(!s)return null;
+  return {id:String(r.id),user_id:s.user.id,medicine_name:r.medicine_name,dosage:r.dosage||'',reminder_time:r.reminder_time,repeat_type:r.repeat_type||'daily',enabled:r.enabled!==false,last_taken:r.last_taken||null,updated_at:new Date().toISOString()};
+}
+function doseRow(x){
+  const s=authSession();if(!s)return null;
+  const iso=x.action_time&&!isNaN(new Date(x.action_time))?new Date(x.action_time).toISOString():new Date().toISOString();
+  return {id:String(x.id),user_id:s.user.id,reminder_id:x.reminder_id!=null?String(x.reminder_id):null,medicine_name:x.medicine_name||'',dosage:x.dosage||'',action:x.action||'taken',action_time:iso};
+}
+async function pushReminder(r){
+  if(!syncReady())return;
+  const body=reminderRow(r);
+  try{await sbRequest('/rest/v1/reminders',{method:'POST',accessToken:authSession().access_token,extraHeaders:{'Prefer':'resolution=merge-duplicates,return=minimal'},body})}
+  catch(e){enqueueSync({t:'reminder',d:body})}
+}
+async function deleteCloudReminder(id){
+  if(!syncReady())return;
+  try{await sbRequest('/rest/v1/reminders?id=eq.'+encodeURIComponent(String(id)),{method:'DELETE',accessToken:authSession().access_token})}
+  catch(e){enqueueSync({t:'reminder_del',id:String(id)})}
+}
+async function pushDose(x){
+  if(!syncReady())return;
+  const body=doseRow(x);if(!body)return;
+  try{await sbRequest('/rest/v1/dose_events',{method:'POST',accessToken:authSession().access_token,extraHeaders:{'Prefer':'resolution=merge-duplicates,return=minimal'},body})}
+  catch(e){enqueueSync({t:'dose',d:body})}
+}
+async function flushSyncQueue(){
+  if(!syncReady())return;
+  const q=syncQueue();if(!q.length)return;
+  const keep=[];
+  for(const op of q){
+    try{
+      if(op.t==='reminder')await sbRequest('/rest/v1/reminders',{method:'POST',accessToken:authSession().access_token,extraHeaders:{'Prefer':'resolution=merge-duplicates,return=minimal'},body:op.d});
+      else if(op.t==='reminder_del')await sbRequest('/rest/v1/reminders?id=eq.'+encodeURIComponent(op.id),{method:'DELETE',accessToken:authSession().access_token});
+      else if(op.t==='dose')await sbRequest('/rest/v1/dose_events',{method:'POST',accessToken:authSession().access_token,extraHeaders:{'Prefer':'resolution=merge-duplicates,return=minimal'},body:op.d});
+    }catch(e){keep.push(op)}
+  }
+  saveSyncQueue(keep);
+}
+async function pullCloud(){
+  if(!syncReady())return {added:0};
+  const token=authSession().access_token;
+  // If this phone last synced a different account, only pull: pushing would move
+  // one person's reminders into someone else's account.
+  const lastUid=localStorage.getItem(SYNC_UID);
+  const foreignAccount=!!(lastUid&&lastUid!==authSession().user.id);
+  if(foreignAccount)console.warn('Different account signed in — pulling only, not pushing local data.');
+  const remote=[await sbRequest('/rest/v1/reminders?select=*&order=updated_at.desc',{accessToken:token}),await sbRequest('/rest/v1/dose_events?select=*&order=action_time.desc&limit=250',{accessToken:token})];
+  const remoteReminders=Array.isArray(remote[0])?remote[0]:[];
+  const remoteDoses=Array.isArray(remote[1])?remote[1]:[];
+  let added=0;
+  const localIds=new Set((window.reminders||[]).map(r=>String(r.id)));
+  remoteReminders.forEach(row=>{
+    if(localIds.has(String(row.id)))return;
+    window.reminders.push({id:row.id,medicine_name:row.medicine_name,dosage:row.dosage||'',reminder_time:row.reminder_time,repeat_type:row.repeat_type||'daily',enabled:row.enabled!==false,created_at:row.updated_at,last_taken:row.last_taken,notificationIds:[]});
+    added++;
+  });
+  if(added){saveReminders();renderReminders();updateNextDose();renderHome();}
+  const remoteIds=new Set(remoteReminders.map(r=>String(r.id)));
+  if(!foreignAccount)for(const r of (window.reminders||[]))if(!remoteIds.has(String(r.id)))await pushReminder(r);
+  const history=readJson(HISTORY_KEY,[]);
+  const haveDose=new Set(history.map(x=>String(x.id)));
+  let doseAdded=0;
+  remoteDoses.forEach(row=>{
+    if(haveDose.has(String(row.id)))return;
+    history.push({id:row.id,reminder_id:row.reminder_id,medicine_name:row.medicine_name,dosage:row.dosage,action:row.action,action_time:row.action_time});
+    doseAdded++;
+  });
+  if(doseAdded){history.sort((a,b)=>new Date(b.action_time)-new Date(a.action_time));saveHistory(history);renderHistoryStats();renderHome();}
+  const remoteDoseIds=new Set(remoteDoses.map(x=>String(x.id)));
+  if(!foreignAccount)for(const x of history.slice(0,60))if(!remoteDoseIds.has(String(x.id)))await pushDose(x);
+  localStorage.setItem(SYNC_UID,authSession().user.id);
+  return {added:added+doseAdded};
+}
+async function syncNow(silent){
+  if(!syncReady()){if(!silent)showToast('Sign in to sync across devices.');return null}
+  if($('account-sync'))$('account-sync').disabled=true;
+  setSyncStatus('Syncing…');
+  try{
+    await flushSyncQueue();
+    const res=await pullCloud();
+    localStorage.setItem(SYNC_AT_KEY,new Date().toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}));
+    setSyncStatus(res&&res.added?('Synced · '+res.added+' new item'+(res.added===1?'':'s')):'Synced');
+    if(!silent)showToast(res&&res.added?('Synced '+res.added+' new item'+(res.added===1?'':'s')+'.'):'Everything is up to date.');
+    return res;
+  }catch(e){
+    setSyncStatus('Offline — will retry');
+    if(!silent)showToast('Could not sync. Changes are saved on this phone.');
+    return null;
+  }finally{
+    if($('account-sync'))$('account-sync').disabled=false;
+  }
+}
+window.addEventListener('online',()=>{if(syncReady())syncNow(true)});
 
 async function init(){seedApiKeys();updateApiUi();ensureSymptomChips();await initAuth();loadSymptoms();try{medicines=await fetch('medicines.json',{cache:'no-store'}).then(r=>r.json());if(!Array.isArray(medicines))medicines=[]}catch(e){console.warn('Medicine database failed to load',e);medicines=[];setTimeout(()=>showToast('Medicine library could not be loaded.'),800)}const p=profile();applyTheme();applyLanguage();renderHistoryStats();renderHome();await setupNativeNotifications();await loadReminders();renderHome();await rescheduleAll()}
 init();
