@@ -18,5 +18,13 @@ window.CURAMED_CONFIG = {
     tinyfish: '', // https://agent.tinyfish.ai/api-keys   (free 12k searches/day)
     openfda: '', // https://open.fda.gov/apis/authentication/
     gemini: ''   // https://aistudio.google.com/apikey
+  },
+  // Optional email + password login. The anon key is a public client key: row
+  // level security (see docs/SUPABASE_AUTH.md) is what protects the data, never
+  // the key. Leave empty to ship without login; the app then offers guest mode
+  // and a "Connect Supabase" panel inside the sign-in screen.
+  supabase: {
+    url: '',     // https://<project-ref>.supabase.co
+    anonKey: ''  // project settings -> API -> anon public key
   }
 };

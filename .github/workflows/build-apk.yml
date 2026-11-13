@@ -42,6 +42,8 @@ jobs:
           TF_KEY: ${{ secrets.TINYFISH_API_KEY }}
           OF_KEY: ${{ secrets.OPENFDA_API_KEY }}
           GM_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SB_URL: ${{ secrets.SUPABASE_URL }}
+          SB_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           node -e '
           const fs = require("fs");
@@ -50,9 +52,15 @@ jobs:
             openfda: process.env.OF_KEY || "",
             gemini: process.env.GM_KEY || ""
           };
-          if (Object.values(keys).some(Boolean)) {
-            fs.writeFileSync("www/config.js", "window.CURAMED_CONFIG = " + JSON.stringify({apiKeys: keys}, null, 2) + ";\n");
-            console.log("Injected built-in keys:", Object.keys(keys).filter(k => keys[k]).join(", "));
+          const supabase = {
+            url: process.env.SB_URL || "",
+            anonKey: process.env.SB_KEY || ""
+          };
+          const anyKey = Object.values(keys).some(Boolean) || supabase.url;
+          if (anyKey) {
+            fs.writeFileSync("www/config.js", "window.CURAMED_CONFIG = " + JSON.stringify({apiKeys: keys, supabase: supabase}, null, 2) + ";\n");
+            console.log("Injected built-in keys:", Object.keys(keys).filter(k => keys[k]).join(", ") || "(none)");
+            console.log("Supabase login:", supabase.url ? "configured" : "not configured (guest mode only)");
           } else {
             console.log("No API key secrets set - building without built-in keys.");
           }
