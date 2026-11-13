@@ -501,7 +501,23 @@
 
   <div id="toast" role="status" aria-live="polite" class="pointer-events-none fixed left-1/2 top-20 z-[60] w-max max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-4 rounded-full bg-[#2a3235] px-4 py-3 text-center text-sm font-semibold text-white opacity-0 shadow-lg transition-all duration-300"></div>
 
+  <!-- Public defaults (Supabase project URL + anon key) ship with the app, so a
+       fresh install can sign in and sync. config.js is generated from repo
+       secrets and overrides anything non-empty here. -->
+  <script src="config.default.js" onerror="window.CURAMED_DEFAULT_CONFIG=null"></script>
   <script src="config.js" onerror="window.CURAMED_CONFIG=null"></script>
+  <script>
+(function(){
+  var d=window.CURAMED_DEFAULT_CONFIG||{},c=window.CURAMED_CONFIG||{};
+  function pick(a,b){a=(a==null?'':String(a)).trim();return a?a:(b==null?'':String(b)).trim()}
+  var da=d.apiKeys||{},ca=c.apiKeys||{},ds=d.supabase||{},cs=c.supabase||{};
+  window.CURAMED_CONFIG={
+    backendUrl:pick(c.backendUrl,d.backendUrl),
+    apiKeys:{tinyfish:pick(ca.tinyfish,da.tinyfish),openfda:pick(ca.openfda,da.openfda),gemini:pick(ca.gemini,da.gemini)},
+    supabase:{url:pick(cs.url,ds.url).replace(/\/+$/,''),anonKey:pick(cs.anonKey,ds.anonKey)}
+  };
+})();
+  </script>
   <script>
 const $=id=>document.getElementById(id);
 const toast=$('toast');let toastTimer;
@@ -576,6 +592,9 @@ window.deleteReminder=async id=>{const r=window.reminders.find(x=>x.id===id);if(
 function logDose(id,action){const r=window.reminders.find(x=>x.id===id);if(!r)return;const rows=readJson(HISTORY_KEY,[]);const event={id:Date.now(),reminder_id:id,medicine_name:r.medicine_name,dosage:r.dosage,action,action_time:new Date().toISOString()};rows.unshift(event);if(action==='taken')r.last_taken=new Date().toISOString();saveHistory(rows);saveReminders();renderHistoryStats();renderHome();pushDose(event);if(action==='taken')pushReminder(r)}
 function dosesScheduledToday(){const now=new Date(),wd=now.getDay(),isWeekend=wd===0||wd===6;return window.reminders.filter(r=>r.enabled).filter(r=>r.repeat_type==='daily'||(r.repeat_type==='weekdays'&&!isWeekend)||r.repeat_type==='once').length}
 function dosesTakenToday(){return readJson(HISTORY_KEY,[]).filter(x=>x.action==='taken'&&new Date(x.action_time).toDateString()===new Date().toDateString()).length}
+/* Time shown on a reminder card. Cloud rows that arrive without a time (or with
+   a malformed one) must not crash the whole list. */
+function hhmm(t){const p=String(t==null?'':t).split(':');return [p[0]||'--',p[1]||'--']}
 function renderHome(){
  if(!window.reminders)return;
  const scheduled=dosesScheduledToday(),taken=dosesTakenToday(),pct=scheduled?Math.min(100,Math.round(taken/scheduled*100)):0;
@@ -589,10 +608,16 @@ function renderHome(){
  const list=$('home-reminders');
  if(list){
   const rows=[...window.reminders].sort((a,b)=>a.reminder_time.localeCompare(b.reminder_time));
-  list.innerHTML=rows.length?rows.map(r=>`<button data-action="reminder" class="flex w-full items-center gap-3 rounded-2xl bg-surface-card p-3 text-left shadow-sm ring-1 ring-slate-100 transition active:scale-[.99] ${r.enabled?'':'opacity-55'}"><span class="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-xl ${r.enabled?'bg-primary-light/70 text-primary':'bg-surface-high text-outline'}"><span class="font-display text-[11px] font-extrabold leading-none">${esc(r.reminder_time.split(':')[0])}</span><span class="font-display text-[11px] font-extrabold leading-none">${esc(r.reminder_time.split(':')[1])}</span></span><span class="min-w-0 flex-1"><b class="block truncate font-display text-base">${esc(r.medicine_name)}</b><small class="block truncate text-xs text-on-surface-variant">${esc(r.dosage||'Dose not specified')} · ${r.repeat_type==='daily'?'Every day':r.repeat_type==='weekdays'?'Weekdays':'One time'}</small></span><span class="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-extrabold ${r.enabled?'bg-secondary-light text-secondary':'bg-surface-high text-outline'}">${r.enabled?'ON':'OFF'}</span></button>`).join(''):`<div class="rounded-2xl border-2 border-dashed border-slate-200 p-5 text-center"><p class="text-sm font-semibold text-on-surface-variant">No medicines yet</p><button data-action="reminder" class="mt-2 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white">Add your first reminder</button></div>`;
+  list.innerHTML=rows.length?rows.map(r=>`<button data-action="reminder" class="flex w-full items-center gap-3 rounded-2xl bg-surface-card p-3 text-left shadow-sm ring-1 ring-slate-100 transition active:scale-[.99] ${r.enabled?'':'opacity-55'}"><span class="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-xl ${r.enabled?'bg-primary-light/70 text-primary':'bg-surface-high text-outline'}"><span class="font-display text-[11px] font-extrabold leading-none">${esc(hhmm(r.reminder_time)[0])}</span><span class="font-display text-[11px] font-extrabold leading-none">${esc(hhmm(r.reminder_time)[1])}</span></span><span class="min-w-0 flex-1"><b class="block truncate font-display text-base">${esc(r.medicine_name)}</b><small class="block truncate text-xs text-on-surface-variant">${esc(r.dosage||'Dose not specified')} · ${r.repeat_type==='daily'?'Every day':r.repeat_type==='weekdays'?'Weekdays':'One time'}</small></span><span class="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-extrabold ${r.enabled?'bg-secondary-light text-secondary':'bg-surface-high text-outline'}">${r.enabled?'ON':'OFF'}</span></button>`).join(''):`<div class="rounded-2xl border-2 border-dashed border-slate-200 p-5 text-center"><p class="text-sm font-semibold text-on-surface-variant">No medicines yet</p><button data-action="reminder" class="mt-2 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white">Add your first reminder</button></div>`;
   list.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>openReminderModal());
  }
 }
+/* init(), logDose(), the clear-history button and pullCloud() all call this to
+   refresh the adherence card. It used to be an undeclared name, which threw at
+   startup (saved reminders never rendered) and aborted the cloud pull right
+   after dose history was merged. One entry point, defined once. */
+function renderHistoryStats(){renderHome()}
+
 function greetingFor(h){const lang=profile().language;const dict={en:['Good morning','Good afternoon','Good evening'],hi:['सुप्रभात','नमस्ते','शुभ संध्या'],pa:['ਸਤ ਸ੍ਰੀ ਅਕਾਲ','ਸਤ ਸ੍ਰੀ ਅਕਾਲ','ਸ਼ੁਭ ਸ਼ਾਮ']};const set=dict[lang]||dict.en;return h<12?set[0]:h<17?set[1]:set[2]}
 function openHistoryModal(){openModal(historyModal);loadHistory()}$('close-history').onclick=()=>closeModal(historyModal);historyModal.addEventListener('click',e=>{if(e.target===historyModal)closeModal(historyModal)});
 function loadHistory(){const box=$('history-list'),rows=readJson(HISTORY_KEY,[]);box.innerHTML=`<div class="mb-3 rounded-2xl bg-primary-light/50 p-4"><p class="text-sm font-bold text-primary">Dose log summary</p><p class="mt-1 text-sm text-on-surface-variant">${rows.filter(x=>x.action==='taken').length} taken · ${rows.filter(x=>x.action==='snoozed').length} snoozed · ${rows.length} total events</p></div>`+(rows.length?rows.map(x=>`<div class="flex items-center justify-between gap-3 rounded-2xl bg-surface-low p-4"><div><p class="font-display font-bold">${esc(x.medicine_name)}</p><p class="text-sm text-on-surface-variant">${esc(x.dosage||'Dose')} · ${esc(x.action)}</p></div><time class="text-xs font-semibold text-outline">${new Date(x.action_time).toLocaleString()}</time></div>`).join(''):'<div class="rounded-2xl bg-surface-low p-5 text-center text-sm text-on-surface-variant">No dose history yet.</div>')}
@@ -1174,8 +1199,10 @@ let authTab='signin';
 
 function sbConfig(){
   const c=window.CURAMED_CONFIG||{},s=c.supabase||{},d=readJson(SB_DEVICE,{});
-  const url=String(s.url||d.url||'').trim().replace(/\/+$/,'');
-  const key=String(s.anonKey||d.anonKey||'').trim();
+  /* A URL pasted on this phone is an explicit choice, so it wins over the
+     build config; the build config beats nothing else. */
+  const url=String(d.url||s.url||'').trim().replace(/\/+$/,'');
+  const key=String(d.anonKey||s.anonKey||'').trim();
   return {url,key,ready:!!(url&&key)};
 }
 function saveSbDevice(url,key){

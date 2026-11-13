@@ -7,6 +7,12 @@
 // someone who downloads it. Only do this with free-tier keys you can rotate,
 // or point the app at your own backend proxy instead (see README_ANDROID.md).
 //
+// NOTE: you usually do not need this file for login — www/config.default.js is
+// committed and already ships the public Supabase project URL + anon key, which
+// is why a fresh install can sign in and sync with no setup. Create config.js
+// only to override that (different project, personal API keys) — non-empty
+// values in config.js win over config.default.js.
+//
 // Two ways to ship a working app:
 //   A. fill apiKeys below  -> keys live inside the APK (convenient, extractable)
 //   B. set backendUrl      -> keys stay on your server (safe for public release)
