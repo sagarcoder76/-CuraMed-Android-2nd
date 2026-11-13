@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta name="theme-color" content="#f3faff" />
+  <meta name="theme-color" content="#f5f9fa" />
   <title>Medsathi — All info in one app</title>
   <link rel="icon" type="image/svg+xml" href="logo.svg" />
   <link rel="apple-touch-icon" href="logo.svg" />
@@ -19,19 +19,21 @@
       theme: {
         extend: {
           colors: {
-            surface: '#f3faff',
-            'surface-low': '#edf5f9',
+            surface: '#f5f9fa',
+            'surface-low': '#edf3f5',
             'surface-card': '#ffffff',
-            'surface-high': '#dce4e8',
-            'on-surface': '#151d20',
-            'on-surface-variant': '#3f484c',
+            'surface-high': '#dde7ea',
+            'on-surface': '#0d1b20',
+            'on-surface-variant': '#44585e',
             primary: '#005264',
-            'primary-light': '#b5ebff',
-            secondary: '#176a5d',
-            'secondary-light': '#a5f1e0',
-            tertiary: '#773a00',
-            'tertiary-light': '#ffdcc5',
-            outline: '#6f797d'
+            'primary-light': '#d3e9ee',
+            secondary: '#0f7a6a',
+            'secondary-light': '#d4efe9',
+            tertiary: '#0f7a6a',
+            'tertiary-light': '#d4efe9',
+            accent: '#c62a52',
+            'accent-soft': '#fbe4ea',
+            outline: '#697b81'
           },
           fontFamily: {
             display: ['Plus Jakarta Sans', 'sans-serif'],
@@ -97,7 +99,10 @@
         <button id="notification-btn" class="flex h-11 w-11 items-center justify-center rounded-full text-on-surface-variant transition hover:bg-surface-high active:scale-95" aria-label="Notifications">
           <span class="material-symbols-outlined">notifications</span>
         </button>
-        <button id="profile-btn" class="flex h-10 w-10 items-center justify-center rounded-full bg-secondary-light font-display text-sm font-bold text-secondary active:scale-95" aria-label="Open profile"><span class="material-symbols-outlined text-[22px]">person</span></button>
+        <div class="relative">
+          <button id="profile-btn" class="flex h-10 w-10 items-center justify-center rounded-full bg-primary-light font-display text-sm font-extrabold text-primary active:scale-95" aria-label="Open profile"><span class="material-symbols-outlined text-[22px]">person</span></button>
+          <span id="auth-dot" class="absolute -bottom-0.5 -right-0.5 hidden h-3 w-3 rounded-full border-2 border-white bg-secondary" title="Signed in"></span>
+        </div>
       </div>
     </div>
   </header>
@@ -108,37 +113,29 @@
     <section class="mb-4">
       <p id="current-date" class="text-xs font-bold uppercase tracking-wider text-primary">Today</p>
       <h1 id="greeting" class="mt-1 font-display text-[26px] font-extrabold leading-tight tracking-tight text-on-surface">Hello</h1>
-      <div id="today-status" class="mt-3 flex items-center gap-2 rounded-2xl bg-surface-low px-3 py-2.5 text-sm font-semibold text-on-surface-variant">
-        <span class="material-symbols-outlined fill-icon text-[18px] text-secondary">event_available</span>
-        <span id="today-status-text" class="min-w-0 flex-1">No doses scheduled today</span>
-        <button data-action="reminder" class="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-bold text-primary ring-1 ring-slate-200">Add</button>
-      </div>
     </section>
 
     <!-- HERO: medicine suggestion (symptom → medicine) -->
-    <section class="mb-4 overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-[#E0446A] via-[#C62A52] to-[#79102F] p-4 shadow-fab">
-      <div class="flex items-start gap-3">
-        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/20 text-white">
-          <span class="material-symbols-outlined fill-icon text-[26px]">stethoscope</span>
+    <section class="relative mb-4 overflow-hidden rounded-[26px] bg-gradient-to-br from-[#C62A52] via-[#B01E44] to-[#7C1030] p-4 shadow-fab">
+      <div class="pointer-events-none absolute -right-12 -top-14 h-44 w-44 rounded-full bg-white/10"></div>
+      <div class="pointer-events-none absolute -bottom-20 -left-10 h-44 w-44 rounded-full bg-black/10"></div>
+      <div class="relative">
+        <div class="flex items-center gap-2">
+          <span class="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-white">New</span>
+          <span class="text-[10px] font-bold uppercase tracking-[.12em] text-white/75">Medicine suggestion</span>
         </div>
-        <div class="min-w-0 flex-1">
-          <div class="flex items-center gap-2">
-            <span class="rounded-full bg-white/25 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-white">New</span>
-            <span class="text-[10px] font-bold uppercase tracking-wider text-white/80">Medicine suggestion</span>
-          </div>
-          <h2 class="mt-1 font-display text-lg font-extrabold leading-snug text-white">Tell us your symptom — we&rsquo;ll suggest what may help</h2>
-          <p class="mt-0.5 text-xs leading-5 text-white/85">Type or speak in Hindi, Hinglish or English. Includes buy links and when to see a doctor.</p>
+        <h2 class="mt-2 font-display text-[22px] font-extrabold leading-[1.22] tracking-tight text-white">Tell us your symptom — we&rsquo;ll suggest what may help</h2>
+        <p class="mt-1 text-[12px] leading-5 text-white/80">Hindi, Hinglish or English · voice or typing · buy links included.</p>
+        <button id="symptom-open" class="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-white font-display text-[15px] font-extrabold text-[#B01E44] transition active:scale-[.985]">
+          <span class="material-symbols-outlined text-[20px]">stethoscope</span>Check my symptom
+        </button>
+        <div class="mt-2.5 flex items-center gap-2">
+          <button id="symptom-voice" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15 text-white ring-1 ring-inset ring-white/25 transition active:scale-95" aria-label="Describe your symptom by voice">
+            <span class="material-symbols-outlined text-[20px]">mic</span>
+          </button>
+          <div id="symptom-quick" class="-my-1 flex flex-1 gap-1.5 overflow-x-auto py-1"></div>
         </div>
       </div>
-      <div class="mt-3 flex gap-2">
-        <button id="symptom-open" class="flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-white font-display text-sm font-extrabold text-[#C62A52] shadow-sm transition active:scale-[.98]">
-          <span class="material-symbols-outlined text-[20px]">search_check</span>Check my symptom
-        </button>
-        <button id="symptom-voice" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/20 text-white transition active:scale-95" aria-label="Describe your symptom by voice">
-          <span class="material-symbols-outlined text-[22px]">mic</span>
-        </button>
-      </div>
-      <div id="symptom-quick" class="mt-2.5 flex gap-1.5 overflow-x-auto pb-0.5"></div>
     </section>
 
     <!-- Primary action: search -->
@@ -155,33 +152,36 @@
     </section>
 
     <!-- Next dose -->
-    <section class="mb-5 overflow-hidden rounded-3xl bg-surface-card shadow-card ring-1 ring-slate-100">
-      <div class="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-2.5">
-        <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary">
-          <span class="relative flex h-2 w-2"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60"></span><span class="relative inline-flex h-2 w-2 rounded-full bg-primary"></span></span>
+    <section class="mb-4 overflow-hidden rounded-[22px] bg-surface-card shadow-card ring-1 ring-slate-100">
+      <div class="flex items-center justify-between gap-3 px-4 pt-3">
+        <span class="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[.12em] text-primary">
+          <span class="relative flex h-1.5 w-1.5"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60"></span><span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary"></span></span>
           Next dose
         </span>
-        <time id="next-dose-time" class="font-display text-sm font-bold text-primary">No dose scheduled</time>
+        <time id="next-dose-time" class="font-display text-sm font-extrabold text-primary">&mdash;</time>
       </div>
-      <div class="p-4">
+      <div class="p-4 pt-3">
         <div class="flex items-start gap-3">
-          <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary-light/60 text-primary">
-            <span class="material-symbols-outlined fill-icon text-3xl">medication</span>
+          <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary-light text-primary">
+            <span class="material-symbols-outlined fill-icon text-2xl">medication</span>
           </div>
           <div class="min-w-0 flex-1">
-            <h2 id="next-dose-name" class="truncate font-display text-xl font-bold">No medicine reminder</h2>
-            <p id="next-dose-dosage" class="mt-0.5 text-sm font-medium text-on-surface-variant">Add a reminder to get started</p>
-            <p id="next-dose-note" class="mt-1 flex items-center gap-1 text-xs text-on-surface-variant"><span class="material-symbols-outlined text-[16px] text-tertiary">schedule</span>We will alert you at the scheduled time</p>
+            <h2 id="next-dose-name" class="truncate font-display text-[19px] font-extrabold tracking-tight">No medicine reminder</h2>
+            <p id="next-dose-dosage" class="mt-0.5 text-[13px] font-medium text-on-surface-variant">Add a reminder to get started</p>
+            <p id="next-dose-note" class="mt-1 flex items-center gap-1 text-[11px] text-on-surface-variant"><span class="material-symbols-outlined text-[15px] text-outline">schedule</span>We will alert you at the scheduled time</p>
           </div>
         </div>
-        <div class="mt-4 flex gap-2">
-          <button id="btn-take-now" class="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-primary font-display text-sm font-bold text-white shadow-sm transition active:scale-[.98]">
-            <span class="material-symbols-outlined text-[20px]">check</span><span>Take Now</span>
+        <div id="dose-actions" class="mt-3 hidden gap-2">
+          <button id="btn-take-now" class="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-primary font-display text-sm font-extrabold text-white transition active:scale-[.98]">
+            <span class="material-symbols-outlined text-[19px]">check</span><span>Take Now</span>
           </button>
-          <button id="btn-snooze" class="flex h-12 items-center justify-center gap-1.5 rounded-xl bg-surface-high px-4 font-display text-sm font-bold text-on-surface-variant transition active:scale-[.98]">
-            <span class="material-symbols-outlined text-[20px]">snooze</span><span>Snooze</span>
+          <button id="btn-snooze" class="flex h-11 items-center justify-center gap-1.5 rounded-xl bg-surface-low px-4 font-display text-sm font-extrabold text-on-surface-variant transition active:scale-[.98]">
+            <span class="material-symbols-outlined text-[19px]">snooze</span><span>Snooze</span>
           </button>
         </div>
+        <button id="dose-empty-cta" class="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary font-display text-sm font-extrabold text-white transition active:scale-[.98]">
+          <span class="material-symbols-outlined text-[19px]">add_alarm</span>Add your first reminder
+        </button>
       </div>
     </section>
 
@@ -195,34 +195,34 @@
     </section>
 
     <!-- Quick actions -->
-    <section class="mb-5 rounded-3xl bg-surface-card p-2 shadow-card ring-1 ring-slate-100">
+    <section class="mb-4 rounded-[22px] bg-surface-card p-2 shadow-card ring-1 ring-slate-100">
       <div class="grid grid-cols-4 gap-1">
-        <button data-action="scan" class="flex flex-col items-center gap-1.5 rounded-2xl py-3 transition active:scale-95 hover:bg-surface-low">
-          <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary-light text-secondary"><span class="material-symbols-outlined fill-icon">photo_camera</span></span>
-          <span class="text-xs font-bold">Scan</span>
+        <button data-action="scan" class="flex flex-col items-center gap-1.5 rounded-2xl py-2.5 transition active:scale-95 hover:bg-surface-low">
+          <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-soft text-accent"><span class="material-symbols-outlined fill-icon text-[22px]">photo_camera</span></span>
+          <span class="text-[11px] font-extrabold tracking-tight">Scan</span>
         </button>
-        <button data-action="reminder" class="flex flex-col items-center gap-1.5 rounded-2xl py-3 transition active:scale-95 hover:bg-surface-low">
-          <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary-light text-primary"><span class="material-symbols-outlined fill-icon">alarm_add</span></span>
-          <span class="text-xs font-bold">Reminders</span>
+        <button data-action="reminder" class="flex flex-col items-center gap-1.5 rounded-2xl py-2.5 transition active:scale-95 hover:bg-surface-low">
+          <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-light text-primary"><span class="material-symbols-outlined fill-icon text-[22px]">alarm_add</span></span>
+          <span class="text-[11px] font-extrabold tracking-tight">Reminders</span>
         </button>
-        <button data-action="history" class="flex flex-col items-center gap-1.5 rounded-2xl py-3 transition active:scale-95 hover:bg-surface-low">
-          <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary-light text-secondary"><span class="material-symbols-outlined fill-icon">history</span></span>
-          <span class="text-xs font-bold">History</span>
+        <button data-action="history" class="flex flex-col items-center gap-1.5 rounded-2xl py-2.5 transition active:scale-95 hover:bg-surface-low">
+          <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-light text-primary"><span class="material-symbols-outlined fill-icon text-[22px]">history</span></span>
+          <span class="text-[11px] font-extrabold tracking-tight">History</span>
         </button>
-        <button data-action="drug-info" class="flex flex-col items-center gap-1.5 rounded-2xl py-3 transition active:scale-95 hover:bg-surface-low">
-          <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-tertiary-light text-tertiary"><span class="material-symbols-outlined fill-icon">menu_book</span></span>
-          <span class="text-xs font-bold">Library</span>
+        <button data-action="drug-info" class="flex flex-col items-center gap-1.5 rounded-2xl py-2.5 transition active:scale-95 hover:bg-surface-low">
+          <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-light text-primary"><span class="material-symbols-outlined fill-icon text-[22px]">menu_book</span></span>
+          <span class="text-[11px] font-extrabold tracking-tight">Library</span>
         </button>
       </div>
     </section>
 
     <!-- Adherence -->
-    <button id="adherence-card" class="flex w-full items-center justify-between gap-4 rounded-3xl bg-surface-low p-4 text-left transition active:scale-[.99] hover:bg-surface-high/70">
+    <button id="adherence-card" class="flex w-full items-center justify-between gap-4 rounded-[22px] bg-surface-card p-4 text-left shadow-card ring-1 ring-slate-100 transition active:scale-[.99] hover:bg-surface-low/60">
       <div class="flex min-w-0 items-center gap-3">
         <div class="relative flex h-14 w-14 shrink-0 items-center justify-center">
           <svg class="h-full w-full -rotate-90" viewBox="0 0 48 48" aria-hidden="true">
-            <circle cx="24" cy="24" r="18" fill="none" stroke="#dce4e8" stroke-width="4.5"></circle>
-            <circle id="adherence-ring" cx="24" cy="24" r="18" fill="none" stroke="#176a5d" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="113.1" stroke-dashoffset="113.1"></circle>
+            <circle cx="24" cy="24" r="18" fill="none" stroke="#dde7ea" stroke-width="4.5"></circle>
+            <circle id="adherence-ring" cx="24" cy="24" r="18" fill="none" stroke="#0f7a6a" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="113.1" stroke-dashoffset="113.1"></circle>
           </svg>
           <span id="adherence-pct" class="absolute font-display text-xs font-bold">—</span>
         </div>
@@ -237,30 +237,81 @@
     <p class="mt-4 px-1 text-center text-xs leading-5 text-outline">Medsathi helps you remember and understand your medicines. It is not a substitute for medical advice.</p>
   </main>
 
-  <nav class="fixed bottom-0 z-50 w-full safe-bottom border-t border-slate-100 bg-white/95 backdrop-blur-xl">
-    <div class="mx-auto grid h-[74px] max-w-2xl grid-cols-5 items-center">
+  <nav class="fixed bottom-0 z-50 w-full safe-bottom border-t border-slate-100/80 bg-white/95 backdrop-blur-xl">
+    <div class="mx-auto grid h-[72px] max-w-2xl grid-cols-5 items-center">
       <a href="#home" class="flex h-full flex-col items-center justify-center gap-0.5 text-primary" aria-current="page">
-        <span class="flex h-8 w-14 items-center justify-center rounded-full bg-secondary-light"><span class="material-symbols-outlined fill-icon text-[22px]">home</span></span>
-        <span class="text-[11px] font-bold">Home</span>
+        <span class="flex h-8 w-14 items-center justify-center rounded-full bg-primary-light"><span class="material-symbols-outlined fill-icon text-[22px]">home</span></span>
+        <span class="text-[10px] font-extrabold tracking-tight">Home</span>
       </a>
-      <button data-action="check" class="flex h-full flex-col items-center justify-center gap-0.5 text-[#C62A52] active:scale-95">
-        <span class="flex h-8 w-14 items-center justify-center rounded-full bg-[#FDE7ED]"><span class="material-symbols-outlined fill-icon text-[22px]">stethoscope</span></span>
-        <span class="text-[11px] font-bold">Check</span>
+      <button data-action="check" class="flex h-full flex-col items-center justify-center gap-0.5 text-accent active:scale-95">
+        <span class="flex h-8 w-14 items-center justify-center rounded-full bg-accent-soft"><span class="material-symbols-outlined fill-icon text-[22px]">stethoscope</span></span>
+        <span class="text-[10px] font-extrabold tracking-tight">Check</span>
       </button>
-      <button data-action="scan" class="-mt-6 flex flex-col items-center justify-center gap-1 active:scale-95" aria-label="Scan a medicine">
-        <span class="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-fab"><span class="material-symbols-outlined fill-icon text-[26px]">document_scanner</span></span>
-        <span class="text-[11px] font-bold text-primary">Scan</span>
+      <button data-action="scan" class="-mt-5 flex flex-col items-center justify-center gap-1 active:scale-95" aria-label="Scan a medicine">
+        <span class="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-fab ring-4 ring-white"><span class="material-symbols-outlined fill-icon text-[26px]">document_scanner</span></span>
+        <span class="text-[10px] font-extrabold tracking-tight text-primary">Scan</span>
       </button>
       <button data-action="reminder" class="flex h-full flex-col items-center justify-center gap-0.5 text-on-surface-variant active:scale-95">
         <span class="flex h-8 w-14 items-center justify-center rounded-full"><span class="material-symbols-outlined text-[22px]">alarm</span></span>
-        <span class="text-[11px] font-bold">Reminders</span>
+        <span class="text-[10px] font-extrabold tracking-tight">Reminders</span>
       </button>
       <button data-action="profile" class="flex h-full flex-col items-center justify-center gap-0.5 text-on-surface-variant active:scale-95">
         <span class="flex h-8 w-14 items-center justify-center rounded-full"><span class="material-symbols-outlined text-[22px]">account_circle</span></span>
-        <span class="text-[11px] font-bold">Profile</span>
+        <span class="text-[10px] font-extrabold tracking-tight">Profile</span>
       </button>
     </div>
   </nav>
+
+  <!-- Sign in / create account -->
+  <div id="auth-screen" class="fixed inset-0 z-[95] hidden flex-col overflow-y-auto overscroll-contain bg-surface px-5 pb-8 pt-8 safe-top">
+    <div class="mx-auto flex w-full max-w-md flex-1 flex-col">
+      <div class="flex items-center gap-3">
+        <img src="logo.svg" alt="" width="46" height="46" class="h-[46px] w-[46px] rounded-[15px] shadow-card" />
+        <span class="flex flex-col leading-none">
+          <span class="font-display text-xl font-extrabold tracking-tight text-primary">Medsathi</span>
+          <span class="mt-1 text-[10px] font-bold uppercase tracking-[.14em] text-outline">All info in one app</span>
+        </span>
+      </div>
+
+      <h1 class="mt-7 font-display text-[28px] font-extrabold leading-tight tracking-tight">Namaste 🙏</h1>
+      <p class="mt-1 text-sm leading-6 text-on-surface-variant">Sign in to keep your name and language in sync. Reminders and dose history always stay on this phone.</p>
+
+      <div class="mt-6 flex rounded-2xl bg-surface-low p-1">
+        <button id="auth-tab-signin" class="flex-1 rounded-xl bg-white px-3 py-2 font-display text-sm font-extrabold text-primary shadow-sm">Sign in</button>
+        <button id="auth-tab-signup" class="flex-1 rounded-xl px-3 py-2 font-display text-sm font-extrabold text-on-surface-variant">Create account</button>
+      </div>
+
+      <form id="auth-form" class="mt-4 space-y-3" novalidate>
+        <label id="auth-name-wrap" class="hidden block">
+          <span class="mb-1 block text-[11px] font-bold uppercase tracking-wide text-outline">Your name</span>
+          <input id="auth-name" autocomplete="name" placeholder="e.g. Sagar" class="h-12 w-full rounded-xl bg-white px-4 text-[15px] font-semibold outline-none ring-1 ring-slate-200 focus:ring-2 focus:ring-primary/30" />
+        </label>
+        <label class="block">
+          <span class="mb-1 block text-[11px] font-bold uppercase tracking-wide text-outline">Email</span>
+          <input id="auth-email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" class="h-12 w-full rounded-xl bg-white px-4 text-[15px] font-semibold outline-none ring-1 ring-slate-200 focus:ring-2 focus:ring-primary/30" />
+        </label>
+        <label class="block">
+          <span class="mb-1 block text-[11px] font-bold uppercase tracking-wide text-outline">Password</span>
+          <input id="auth-password" type="password" autocomplete="current-password" placeholder="At least 6 characters" class="h-12 w-full rounded-xl bg-white px-4 text-[15px] font-semibold outline-none ring-1 ring-slate-200 focus:ring-2 focus:ring-primary/30" />
+        </label>
+        <p id="auth-error" class="hidden rounded-xl bg-accent-soft px-3 py-2 text-xs font-bold leading-5 text-accent"></p>
+        <button id="auth-submit" class="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-accent font-display text-[15px] font-extrabold text-white shadow-sm transition active:scale-[.985]">Sign in</button>
+      </form>
+
+      <button id="auth-forgot" class="mt-2 self-center text-xs font-bold text-primary">Forgot password?</button>
+      <button id="auth-guest" class="mt-3 flex h-11 w-full items-center justify-center rounded-xl bg-surface-low font-display text-sm font-extrabold text-on-surface-variant">Continue as guest</button>
+
+      <div id="auth-setup" class="mt-5 hidden rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+        <p class="font-display text-sm font-extrabold">Connect Supabase</p>
+        <p class="mt-1 text-[11px] leading-4 text-on-surface-variant">Paste your project URL and anon key. They are stored only on this phone.</p>
+        <input id="auth-sb-url" placeholder="https://xxxx.supabase.co" class="mt-2 h-11 w-full rounded-xl bg-surface-low px-3 text-xs font-semibold outline-none" />
+        <input id="auth-sb-key" placeholder="anon public key" class="mt-2 h-11 w-full rounded-xl bg-surface-low px-3 text-xs font-semibold outline-none" />
+        <button id="auth-sb-save" class="mt-2 h-10 w-full rounded-xl bg-primary font-display text-xs font-extrabold text-white">Save connection</button>
+      </div>
+
+      <p class="mt-auto pt-6 text-center text-[11px] leading-5 text-outline">Medsathi gives general medicine information, not a diagnosis.<br />In an emergency call 108 or 112.</p>
+    </div>
+  </div>
 
   <div id="reminder-modal" class="fixed inset-0 z-[70] hidden items-end justify-center bg-black/30 p-0 backdrop-blur-sm sm:items-center sm:p-4">
     <div class="max-h-[90vh] w-full max-w-2xl overflow-y-auto overscroll-contain rounded-t-[2rem] bg-white p-5 shadow-2xl sm:rounded-[2rem]">
@@ -323,6 +374,21 @@
         <div class="flex items-center gap-4 rounded-2xl bg-surface-low p-4">
           <div id="profile-avatar" class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-secondary-light font-display text-xl font-bold text-secondary"><span class="material-symbols-outlined text-[26px]">person</span></div>
           <div class="min-w-0 flex-1"><p class="text-xs font-bold uppercase tracking-wide text-outline">Your name</p><input id="profile-name" class="mt-1 w-full bg-transparent font-display text-lg font-bold outline-none" placeholder="Your name" /></div>
+        </div>
+        <div class="rounded-2xl bg-surface-low p-4">
+          <div class="flex items-center gap-3">
+            <span class="flex h-10 w-10 items-center justify-center rounded-full bg-white text-primary"><span class="material-symbols-outlined text-[20px]" id="account-icon">person</span></span>
+            <div class="min-w-0 flex-1">
+              <p class="text-[11px] font-bold uppercase tracking-wide text-outline">Account</p>
+              <p id="account-email" class="truncate text-sm font-bold">Not signed in</p>
+            </div>
+          </div>
+          <div class="mt-3 flex gap-2">
+            <button id="account-signin" class="h-10 flex-1 rounded-xl bg-accent font-display text-xs font-extrabold text-white">Sign in / Create</button>
+            <button id="account-signout" class="hidden h-10 flex-1 rounded-xl bg-white font-display text-xs font-extrabold text-accent ring-1 ring-slate-200">Sign out</button>
+            <button id="account-setup" class="h-10 rounded-xl bg-white px-3 font-display text-xs font-extrabold text-primary ring-1 ring-slate-200">Setup</button>
+          </div>
+          <p id="account-note" class="mt-2 text-[11px] leading-4 text-on-surface-variant">Reminders, scans and history stay on this device.</p>
         </div>
         <label class="flex items-center justify-between rounded-2xl bg-surface-low p-4">
           <span><span class="block font-bold" data-i18n="language">Language</span><span class="text-sm text-on-surface-variant">English · हिन्दी · ਪੰਜਾਬੀ</span></span>
@@ -450,7 +516,7 @@ function saveHistory(rows){localStorage.setItem(HISTORY_KEY,JSON.stringify(rows.
 function profile(){return readJson(PROFILE_KEY,{name:'',language:'en',dark:false});}
 function saveProfile(p){localStorage.setItem(PROFILE_KEY,JSON.stringify(p));}
 function esc(x){return String(x??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
-function applyTheme(){const p=profile();document.body.classList.toggle('dark-mode',!!p.dark);$('dark-switch')?.classList.toggle('bg-secondary',!!p.dark);$('dark-switch')?.classList.toggle('bg-surface-high',!p.dark);document.querySelector('meta[name="theme-color"]').content=p.dark?'#10181b':'#f3faff';}
+function applyTheme(){const p=profile();document.body.classList.toggle('dark-mode',!!p.dark);$('dark-switch')?.classList.toggle('bg-secondary',!!p.dark);$('dark-switch')?.classList.toggle('bg-surface-high',!p.dark);document.querySelector('meta[name="theme-color"]').content=p.dark?'#10181b':'#f5f9fa';}
 function applyLanguage(){
  const p=profile(),t=I18N[p.language]||I18N.en;document.documentElement.lang=p.language==='hi'?'hi':p.language==='pa'?'pa':'en';
  document.querySelectorAll('[data-i18n]').forEach(el=>{if(t[el.dataset.i18n])el.textContent=t[el.dataset.i18n]});
@@ -497,7 +563,7 @@ async function rescheduleAll(){for(const r of window.reminders){if(r.enabled)awa
 function openReminderModal(){openModal(modal);loadReminders()}function closeReminderModal(){closeModal(modal)}
 $('close-reminders').onclick=closeReminderModal;modal.addEventListener('click',e=>{if(e.target===modal)closeReminderModal()});
 function renderReminders(){const box=$('reminder-list');if(!window.reminders.length){box.innerHTML='<div class="rounded-2xl bg-surface-low p-5 text-center text-sm text-on-surface-variant">No reminders yet. Add your first medicine alarm above.</div>'}else{box.innerHTML=window.reminders.map(r=>`<div class="flex items-center gap-3 rounded-2xl bg-surface-low p-4"><div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary"><span class="material-symbols-outlined fill-icon">medication</span></div><div class="min-w-0 flex-1"><div class="flex items-center justify-between gap-2"><h3 class="font-display font-bold">${esc(r.medicine_name)}</h3><span class="font-display font-bold text-primary">${r.reminder_time}</span></div><p class="text-sm text-on-surface-variant">${esc(r.dosage||'Dose not specified')} · ${r.repeat_type}</p></div><button onclick="toggleReminder(${r.id},${!r.enabled})" class="h-10 rounded-full px-3 text-xs font-bold ${r.enabled?'bg-secondary-light text-secondary':'bg-surface-high text-outline'}">${r.enabled?'ON':'OFF'}</button><button onclick="deleteReminder(${r.id})" class="flex h-10 w-10 items-center justify-center rounded-full text-outline"><span class="material-symbols-outlined">delete</span></button></div>`).join('')}renderHome()}
-function updateNextDose(){const now=new Date(),active=window.reminders.filter(r=>r.enabled);let best=null,bd=Infinity;active.forEach(r=>{const [h,m]=r.reminder_time.split(':').map(Number);let d=new Date(now);d.setHours(h,m,0,0);if(d<=now)d.setDate(d.getDate()+1);if(r.repeat_type==='weekdays'&&[0,6].includes(d.getDay()))do{d.setDate(d.getDate()+1)}while([0,6].includes(d.getDay()));const delta=d-now;if(delta<bd){bd=delta;best={...r,when:d}}});window.currentReminder=best;const t=I18N[profile().language]||I18N.en;$('next-dose-time').textContent=best?new Intl.DateTimeFormat('en-IN',{hour:'numeric',minute:'2-digit'}).format(best.when):t.noDose;$('next-dose-name').textContent=best?best.medicine_name:t.noReminder;$('next-dose-dosage').textContent=best?(best.dosage||'Dose not specified'):t.addStart}
+function updateNextDose(){const now=new Date(),active=window.reminders.filter(r=>r.enabled);let best=null,bd=Infinity;active.forEach(r=>{const [h,m]=r.reminder_time.split(':').map(Number);let d=new Date(now);d.setHours(h,m,0,0);if(d<=now)d.setDate(d.getDate()+1);if(r.repeat_type==='weekdays'&&[0,6].includes(d.getDay()))do{d.setDate(d.getDate()+1)}while([0,6].includes(d.getDay()));const delta=d-now;if(delta<bd){bd=delta;best={...r,when:d}}});window.currentReminder=best;const t=I18N[profile().language]||I18N.en;$('next-dose-time').textContent=best?new Intl.DateTimeFormat('en-IN',{hour:'numeric',minute:'2-digit'}).format(best.when):t.noDose;$('next-dose-name').textContent=best?best.medicine_name:t.noReminder;$('next-dose-dosage').textContent=best?(best.dosage||'Dose not specified'):t.addStart;$('dose-actions')?.classList.toggle('hidden',!best);$('dose-actions')?.classList.toggle('flex',!!best);$('dose-empty-cta')?.classList.toggle('hidden',!!best)}
 async function loadReminders(){window.reminders=readJson(REMINDERS_KEY,[]);renderReminders();updateNextDose()}
 async function addReminder(d){const r={id:Date.now(),medicine_name:d.medicine_name.trim(),dosage:(d.dosage||'').trim(),reminder_time:d.reminder_time,repeat_type:['daily','weekdays','once'].includes(d.repeat_type)?d.repeat_type:'daily',enabled:true,created_at:new Date().toISOString(),last_taken:null,notificationIds:[]};window.reminders.push(r);saveReminders();await scheduleReminderNotifications(r);renderReminders();updateNextDose()}
 $('reminder-form').onsubmit=async e=>{e.preventDefault();const n=$('r-medicine').value.trim(),t=$('r-time').value;if(!n||!t){showToast('Medicine and time are required.');return}await addReminder({medicine_name:n,dosage:$('r-dosage').value,reminder_time:t,repeat_type:$('r-repeat').value});e.target.reset();showToast('Medicine reminder added.')};
@@ -515,14 +581,6 @@ function renderHome(){
  if(ring)ring.setAttribute('stroke-dashoffset',String(113.1*(1-pct/100)));
  if(label)label.textContent=scheduled?pct+'%':'—';
  if(sub)sub.textContent=scheduled?`${taken} of ${scheduled} doses recorded today · ${total} total`:(total?`${total} doses recorded so far`:'No doses recorded yet');
- const statusText=$('today-status-text'),statusBox=$('today-status');
- if(statusText){
-  const left=Math.max(0,scheduled-taken);
-  if(!scheduled)statusText.textContent='No doses scheduled today — add a reminder to begin';
-  else if(!left)statusText.textContent=`All ${scheduled} dose${scheduled===1?'':'s'} done today. Well done!`;
-  else statusText.textContent=`${left} of ${scheduled} dose${scheduled===1?'':'s'} left today`;
-  if(statusBox){const icon=statusBox.querySelector('span.material-symbols-outlined');if(icon)icon.textContent=scheduled&&!left?'check_circle':'event_available';statusBox.className='mt-3 flex items-center gap-2 rounded-2xl px-3 py-2.5 text-sm font-semibold '+(scheduled&&!left?'bg-secondary-light text-secondary':'bg-surface-low text-on-surface-variant');}
- }
  const g=$('greeting');if(g)g.textContent=greetingFor(new Date().getHours());
  const list=$('home-reminders');
  if(list){
@@ -695,11 +753,12 @@ function openSymptom(){
 }
 function closeSymptom(){const m=$('symptom-modal');if(m)closeModal(m);if(recorder&&recorder.state==='recording')recorder.stop()}
 $('symptom-open').onclick=openSymptom;
+if($('dose-empty-cta'))$('dose-empty-cta').onclick=()=>openReminderModal();
 $('symptom-voice').onclick=()=>{openSymptom();setTimeout(()=>startVoice(),320)};
 function renderHomeSymptomChips(){
  const box=$('symptom-quick');if(!box||box.dataset.ready)return;
  const items=SYMPTOM_CHIPS.slice(0,5);
- box.innerHTML=items.map(c=>`<button data-qsym="${esc(c)}" class="shrink-0 rounded-full bg-white/20 px-3 py-1.5 text-[11px] font-bold text-white active:scale-95">${esc(c)}</button>`).join('');
+ box.innerHTML=items.map(c=>`<button data-qsym="${esc(c)}" class="shrink-0 rounded-lg bg-white/15 px-2.5 py-1.5 text-[11px] font-bold text-white/95 ring-1 ring-inset ring-white/20 active:scale-95">${esc(c)}</button>`).join('');
  box.dataset.ready='1';
  box.querySelectorAll('[data-qsym]').forEach(b=>b.onclick=e=>{e.stopPropagation();quickSymptom(b.dataset.qsym)});
 }
@@ -1099,7 +1158,206 @@ document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{const a=b.d
 $('adherence-card').onclick=openHistoryModal;$('camera-search').onclick=openScan;
 function ensureSymptomChips(){try{renderHomeSymptomChips()}catch(e){}}
 async function loadSymptoms(){try{SYMPTOM_DB=await fetch('symptoms.json',{cache:'no-store'}).then(r=>r.json())}catch(e){console.warn('Symptom data failed to load',e);SYMPTOM_DB=null}}
-async function init(){seedApiKeys();updateApiUi();ensureSymptomChips();loadSymptoms();try{medicines=await fetch('medicines.json',{cache:'no-store'}).then(r=>r.json());if(!Array.isArray(medicines))medicines=[]}catch(e){console.warn('Medicine database failed to load',e);medicines=[];setTimeout(()=>showToast('Medicine library could not be loaded.'),800)}const p=profile();applyTheme();applyLanguage();renderHistoryStats();renderHome();await setupNativeNotifications();await loadReminders();renderHome();await rescheduleAll()}
+
+/* ================= Supabase auth =================
+   Email + password auth through the Supabase REST API (no SDK, so the app
+   keeps working offline and the bundle stays small). The session is cached in
+   localStorage and refreshed in the background. Reminders, scans and dose
+   history never leave the device — only the profile row is synced. */
+const AUTH_KEY='curamed.auth.v1',AUTH_SKIP='curamed.auth.skip.v1',SB_DEVICE='curamed.supabase.v1';
+const authScreen=$('auth-screen');
+let authTab='signin';
+
+function sbConfig(){
+  const c=window.CURAMED_CONFIG||{},s=c.supabase||{},d=readJson(SB_DEVICE,{});
+  const url=String(s.url||d.url||'').trim().replace(/\/+$/,'');
+  const key=String(s.anonKey||d.anonKey||'').trim();
+  return {url,key,ready:!!(url&&key)};
+}
+function saveSbDevice(url,key){
+  localStorage.setItem(SB_DEVICE,JSON.stringify({url:String(url||'').trim().replace(/\/+$/,''),anonKey:String(key||'').trim()}));
+}
+function authSession(){return readJson(AUTH_KEY,null);}
+function authUser(){const s=authSession();return s&&s.user?s.user:null;}
+function saveAuthSession(s){if(s)localStorage.setItem(AUTH_KEY,JSON.stringify(s));else localStorage.removeItem(AUTH_KEY);renderAccount();}
+
+async function sbRequest(path,{method='GET',body,accessToken,extraHeaders}={}){
+  const {url,key}=sbConfig();
+  if(!url||!key)throw new Error('Supabase is not connected yet.');
+  const headers=Object.assign({'Content-Type':'application/json','apikey':key,'Authorization':'Bearer '+(accessToken||key)},extraHeaders||{});
+  let res;
+  try{
+    res=await fetch(url+path,{method,headers,body:body?JSON.stringify(body):undefined});
+  }catch(e){
+    const err=new Error('Network problem. Check your internet connection.');err.offline=true;throw err;
+  }
+  const text=await res.text();
+  let data=null;try{data=text?JSON.parse(text):null}catch(e){data=text}
+  if(!res.ok){
+    const raw=(data&&(data.error_description||data.msg||data.message||data.error))||('Request failed ('+res.status+')');
+    const err=new Error(raw);err.status=res.status;throw err;
+  }
+  return data;
+}
+function normaliseSession(d,email,name){
+  if(!d||!d.access_token)return null;
+  const u=d.user||{};
+  const meta=u.user_metadata||{};
+  return {access_token:d.access_token,refresh_token:d.refresh_token,expires_at:Date.now()+((d.expires_in||3600)*1000),user:{id:u.id,email:u.email||email||'',full_name:meta.full_name||name||''}};
+}
+async function authSignUp(email,password,fullName){
+  const d=await sbRequest('/auth/v1/signup',{method:'POST',body:{email,password,data:{full_name:fullName||''}}});
+  return normaliseSession(d,email,fullName);
+}
+async function authSignIn(email,password){
+  const d=await sbRequest('/auth/v1/token?grant_type=password',{method:'POST',body:{email,password}});
+  const s=normaliseSession(d,email,'');
+  if(!s)throw new Error('Could not sign in. Please try again.');
+  return s;
+}
+async function authRefresh(){
+  const cur=authSession();
+  if(!cur||!cur.refresh_token)return null;
+  try{
+    const d=await sbRequest('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:{refresh_token:cur.refresh_token}});
+    const s=normaliseSession(d,cur.user&&cur.user.email,cur.user&&cur.user.full_name);
+    if(s){saveAuthSession(s);return s;}
+    return null;
+  }catch(e){
+    saveAuthSession(null);return null;
+  }
+}
+async function syncProfile(){
+  const s=authSession();if(!s)return;
+  try{
+    const rows=await sbRequest('/rest/v1/profiles?select=id,full_name,language&id=eq.'+encodeURIComponent(s.user.id),{accessToken:s.access_token});
+    const row=Array.isArray(rows)?rows[0]:null;
+    const local=profile();
+    const cloudName=(row&&row.full_name)||s.user.full_name||'';
+    if(cloudName&&!local.name){const p=profile();p.name=cloudName;saveProfile(p);applyLanguage();renderAvatar();}
+    if(!row||!row.full_name){
+      await sbRequest('/rest/v1/profiles',{method:'POST',accessToken:s.access_token,
+        extraHeaders:{'Prefer':'resolution=merge-duplicates,return=minimal'},
+        body:{id:s.user.id,email:s.user.email,full_name:cloudName||s.user.email,language:local.language||'en'}});
+    }else if(row.language&&row.language!==local.language&&!local.language){
+      const p=profile();p.language=row.language;saveProfile(p);applyLanguage();
+    }
+  }catch(e){console.warn('Profile sync skipped:',e.message);}
+}
+async function authSignOut(){
+  const s=authSession();
+  if(s&&s.access_token){try{await sbRequest('/auth/v1/logout',{method:'POST',accessToken:s.access_token})}catch(e){}}
+  saveAuthSession(null);
+  showToast('Signed out. Your local data is still here.');
+  renderAccount();
+}
+
+/* ---------- auth screen ---------- */
+function authError(msg){
+  const el=$('auth-error');
+  el.textContent=msg;el.classList.remove('hidden');
+}
+function clearAuthError(){$('auth-error').classList.add('hidden')}
+function setAuthBusy(busy){
+  const b=$('auth-submit');
+  b.disabled=busy;b.classList.toggle('opacity-60',busy);
+  b.textContent=busy?'Please wait…':(authTab==='signin'?'Sign in':'Create account');
+}
+function setAuthTab(tab){
+  authTab=tab;
+  $('auth-tab-signin').className=tab==='signin'?'flex-1 rounded-xl bg-white px-3 py-2 font-display text-sm font-extrabold text-primary shadow-sm':'flex-1 rounded-xl px-3 py-2 font-display text-sm font-extrabold text-on-surface-variant';
+  $('auth-tab-signup').className=tab==='signup'?'flex-1 rounded-xl bg-white px-3 py-2 font-display text-sm font-extrabold text-primary shadow-sm':'flex-1 rounded-xl px-3 py-2 font-display text-sm font-extrabold text-on-surface-variant';
+  $('auth-name-wrap').classList.toggle('hidden',tab!=='signup');
+  $('auth-password').setAttribute('autocomplete',tab==='signin'?'current-password':'new-password');
+  $('auth-submit').textContent=tab==='signin'?'Sign in':'Create account';
+  clearAuthError();
+}
+function openAuth(tab='signin'){
+  setAuthTab(tab);
+  $('auth-setup').classList.toggle('hidden',sbConfig().ready);
+  if(!sbConfig().ready)authError('Supabase is not connected — add the URL and anon key below.');
+  authScreen.classList.remove('hidden');authScreen.classList.add('flex');
+  setTimeout(()=>{try{(sbConfig().ready?$('auth-email'):$('auth-sb-url')).focus()}catch(e){}},180);
+}
+function closeAuth(){authScreen.classList.add('hidden');authScreen.classList.remove('flex')}
+function prettyAuthError(err){
+  const m=String(err&&err.message||'Something went wrong.');
+  if(/invalid login credentials/i.test(m))return 'Wrong email or password. New here? Tap "Create account".';
+  if(/user already registered|already been registered/i.test(m))return 'This email is already registered. Use Sign in.';
+  if(/email not confirmed/i.test(m))return 'Please confirm your email first, then sign in.';
+  if(/password should be at least/i.test(m))return 'Password must be at least 6 characters.';
+  if(/unable to validate email|invalid email/i.test(m))return 'Enter a valid email address.';
+  if(/rate limit|too many/i.test(m))return 'Too many attempts. Please wait a minute and try again.';
+  return m;
+}
+function finishAuth(){
+  const u=authUser();
+  closeAuth();
+  showToast(u&&u.email?('Signed in as '+u.email):'Signed in.');
+  renderAccount();
+}
+function renderAccount(){
+  const u=authUser(),ready=sbConfig().ready;
+  const dot=$('auth-dot');if(dot)dot.classList.toggle('hidden',!u);
+  const email=$('account-email');
+  if(email)email.textContent=u?u.email:(ready?'Not signed in':'Supabase not connected');
+  const icon=$('account-icon');if(icon)icon.textContent=u?'verified_user':'person';
+  const signin=$('account-signin'),signout=$('account-signout');
+  if(signin)signin.classList.toggle('hidden',!!u);
+  if(signout)signout.classList.toggle('hidden',!u);
+  const note=$('account-note');
+  if(note)note.textContent=u?'Profile synced. Reminders and history stay on this device.':(ready?'Sign in to sync your name and language.':'Add your Supabase URL and anon key to enable login.');
+}
+if(authScreen){
+  $('auth-tab-signin').onclick=()=>setAuthTab('signin');
+  $('auth-tab-signup').onclick=()=>setAuthTab('signup');
+  $('auth-guest').onclick=()=>{localStorage.setItem(AUTH_SKIP,'1');closeAuth();showToast('Guest mode — all features stay available offline.');};
+  $('auth-sb-save').onclick=()=>{
+    const url=$('auth-sb-url').value.trim(),key=$('auth-sb-key').value.trim();
+    if(!/^https?:\/\//.test(url)||key.length<20){authError('Paste the project URL and the anon public key.');return}
+    saveSbDevice(url,key);clearAuthError();$('auth-setup').classList.add('hidden');showToast('Supabase connected.');
+  };
+  $('auth-forgot').onclick=async()=>{
+    const email=$('auth-email').value.trim();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){authError('Enter your email first, then tap Forgot password.');return}
+    try{await sbRequest('/auth/v1/recover',{method:'POST',body:{email}});showToast('Reset link sent to '+email+'.')}
+    catch(e){authError(prettyAuthError(e))}
+  };
+  $('auth-form').onsubmit=async e=>{
+    e.preventDefault();
+    const email=$('auth-email').value.trim(),pass=$('auth-password').value,name=$('auth-name').value.trim();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){authError('Enter a valid email address.');return}
+    if(pass.length<6){authError('Password must be at least 6 characters.');return}
+    if(!sbConfig().ready){authError('Supabase is not connected — add the URL and anon key below.');return}
+    clearAuthError();setAuthBusy(true);
+    try{
+      if(authTab==='signup'){
+        const sess=await authSignUp(email,pass,name);
+        if(sess){saveAuthSession(sess);await syncProfile();finishAuth();}
+        else{setAuthTab('signin');showToast('Account created. Check your email to confirm, then sign in.');}
+      }else{
+        const sess=await authSignIn(email,pass);
+        saveAuthSession(sess);await syncProfile();finishAuth();
+      }
+    }catch(err){authError(prettyAuthError(err))}
+    finally{setAuthBusy(false)}
+  };
+  const accSignin=$('account-signin'),accSignout=$('account-signout'),accSetup=$('account-setup');
+  if(accSignin)accSignin.onclick=()=>{closeProfile();openAuth('signin')};
+  if(accSignout)accSignout.onclick=()=>{authSignOut()};
+  if(accSetup)accSetup.onclick=()=>{closeProfile();openAuth('signin');$('auth-setup').classList.remove('hidden')};
+}
+async function initAuth(){
+  const sess=authSession();
+  if(sess){
+    if(sess.expires_at&&sess.expires_at<Date.now()+60000)await authRefresh();
+    else await syncProfile();
+  }
+  renderAccount();
+  if(!authSession()&&!localStorage.getItem(AUTH_SKIP))openAuth('signin');
+}
+
+async function init(){seedApiKeys();updateApiUi();ensureSymptomChips();await initAuth();loadSymptoms();try{medicines=await fetch('medicines.json',{cache:'no-store'}).then(r=>r.json());if(!Array.isArray(medicines))medicines=[]}catch(e){console.warn('Medicine database failed to load',e);medicines=[];setTimeout(()=>showToast('Medicine library could not be loaded.'),800)}const p=profile();applyTheme();applyLanguage();renderHistoryStats();renderHome();await setupNativeNotifications();await loadReminders();renderHome();await rescheduleAll()}
 init();
 </script>
 </body>
