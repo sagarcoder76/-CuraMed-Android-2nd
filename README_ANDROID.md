@@ -41,6 +41,11 @@ The app is now **Medsathi — all info in one app**.
 - **App palette:** the UI stays teal (`#005264` primary) for calm, readable
   medical screens — the crimson mark is the brand accent.
 
+> **Just want the steps to install and test it on a phone?**
+> See [`docs/STEP_BY_STEP.md`](docs/STEP_BY_STEP.md) — download → install →
+> create account → add a reminder → check the row in Supabase → second phone →
+> airplane mode.
+
 ## Build the APK from GitHub (no computer setup needed)
 
 Everything happens on GitHub's servers. You only need a browser or the GitHub app.
