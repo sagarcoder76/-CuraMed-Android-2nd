@@ -1,9 +1,10 @@
 """Apply the Medsathi launcher icons to a freshly generated Android project.
 
-`npx cap add android` writes Capacitor's default icon into every mipmap folder.
-This script copies the Medsathi icon set from `resources/android/` over those
-files and sets the adaptive-icon background colour, so the installed app shows
-the real logo instead of the Capacitor placeholder.
+`npx cap add android` writes Capacitor's default icon and splash artwork into
+the generated project. This script copies the Medsathi icon set and branded
+splash screens from `resources/android/` over those files and sets the
+adaptive-icon background colour, so the installed app shows the real logo
+instead of the Capacitor placeholder.
 
 Safe to run more than once; it only overwrites icon files it owns.
 """
@@ -16,7 +17,23 @@ SRC = ROOT / "resources" / "android"
 RES = ROOT / "android" / "app" / "src" / "main" / "res"
 
 DENSITIES = ["mdpi", "hdpi", "xhdpi", "xxhdpi", "xxxhdpi"]
-BACKGROUND = "#C62A52"
+BACKGROUND = "#084A5A"
+
+# Explicit source -> destination pairs. Do NOT classify by substring: the
+# word "foreground" contains "round", which used to send the transparent
+# adaptive foreground into ic_launcher_round.png and leave the Capacitor
+# placeholder as the real adaptive foreground (white-on-white launcher).
+ICON_FILES = (
+    ("ic_launcher_{density}.png", "ic_launcher.png"),
+    ("ic_launcher_round_{density}.png", "ic_launcher_round.png"),
+    ("ic_launcher_foreground_{density}.png", "ic_launcher_foreground.png"),
+)
+
+SPLASH_FILES = (
+    ("splash_base.png", "drawable/splash.png"),
+    *((f"splash_port_{d}.png", f"drawable-port-{d}/splash.png") for d in DENSITIES),
+    *((f"splash_land_{d}.png", f"drawable-land-{d}/splash.png") for d in DENSITIES),
+)
 
 
 def main() -> int:
@@ -31,22 +48,26 @@ def main() -> int:
     for density in DENSITIES:
         target_dir = RES / f"mipmap-{density}"
         target_dir.mkdir(parents=True, exist_ok=True)
-        for name in (f"ic_launcher_{density}.png",
-                     f"ic_launcher_round_{density}.png",
-                     f"ic_launcher_foreground_{density}.png"):
-            src = SRC / name
+        for source_name, target_name in ICON_FILES:
+            src = SRC / source_name.format(density=density)
             if not src.exists():
                 continue
-            if "round" in name:
-                out = target_dir / "ic_launcher_round.png"
-            elif "foreground" in name:
-                out = target_dir / "ic_launcher_foreground.png"
-            else:
-                out = target_dir / "ic_launcher.png"
-            shutil.copyfile(src, out)
+            shutil.copyfile(src, target_dir / target_name)
             copied += 1
 
-    # Adaptive icons reference @color/ic_launcher_background on some templates.
+    # Branded launch background behind the WebView (styles.xml points at
+    # @drawable/splash) instead of Capacitor's white/blue placeholder.
+    for source_name, target_rel in SPLASH_FILES:
+        src = SRC / source_name
+        if not src.exists():
+            continue
+        out = RES / target_rel
+        out.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(src, out)
+        copied += 1
+
+    # Adaptive icons reference @color/ic_launcher_background in
+    # mipmap-anydpi-v26/ic_launcher.xml; keep it on brand teal.
     values = RES / "values"
     values.mkdir(parents=True, exist_ok=True)
     colors = values / "ic_launcher_background.xml"
@@ -57,12 +78,6 @@ def main() -> int:
         "</resources>\n"
     )
 
-    # Splash background should match the brand instead of Capacitor blue.
-    styles = values / "styles.xml"
-    if styles.exists():
-        text = styles.read_text()
-        if "#FFFFFF" in text and "Medsathi" not in text:
-            styles.write_text(text)
     print(f"Applied Medsathi icons: {copied} files, background {BACKGROUND}")
     return 0
 
