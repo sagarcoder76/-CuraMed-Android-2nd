@@ -153,10 +153,51 @@ in airplane mode.
 | Sign out | session, queue and sync stamp are dropped; local reminders and history are **kept** |
 | Different account signs in on the same phone | pull only — local rows are never pushed into another person's account |
 
-Profile → Account shows the last sync time and a **Sync now** button.
+Profile → Account shows the last sync time and a **Sync now** button, plus two
+account actions once you are signed in:
+
+- **Change password** — `PUT /auth/v1/user` with the new password and the session
+  bearer token. Works fully in the app, no email needed (the emailed reset link
+  cannot reopen an APK, so it is not the primary path).
+- **Delete account** — `POST /rest/v1/rpc/delete_own_account`, then the session,
+  sync queue, sync stamp and sync uid are cleared and the app drops back to guest
+  mode. Local reminders and history stay on the phone.
 
 No SDK is bundled — the app talks to the REST endpoints with `fetch`, so it stays
 offline-first and small. If the network is down the error says so instead of hanging.
+
+### Account deletion (migration `delete_own_account`)
+
+The anon key cannot touch `auth.users`, so deletion goes through a
+`security definer` function that acts only on the caller:
+
+```sql
+create or replace function public.delete_own_account()
+returns void
+language plpgsql
+security definer
+set search_path = public, auth
+as $fn$
+declare uid uuid := auth.uid();
+begin
+  if uid is null then raise exception 'Not signed in' using errcode = '28000'; end if;
+  delete from auth.users where id = uid;   -- cascades
+end;
+$fn$;
+
+revoke all on function public.delete_own_account() from public;
+revoke all on function public.delete_own_account() from anon;
+grant execute on function public.delete_own_account() to authenticated;
+```
+
+`profiles.id`, `reminders.user_id` and `dose_events.user_id` all reference
+`auth.users(id) on delete cascade`, so one delete removes the account, its profile,
+its reminders and its dose log. A signed-out caller gets `Not signed in`; `anon`
+has no `execute` privilege at all.
+
+Verified on the live project inside a rolled-back transaction: the user row, profile,
+reminder and dose all disappear, `has_function_privilege('anon', ...)` is `false`,
+`has_function_privilege('authenticated', ...)` is `true`.
 
 ## 5. Test plan on device
 
@@ -173,6 +214,12 @@ offline-first and small. If the network is down the error says so instead of han
    says "Offline — will retry". Turn the network back on, tap **Sync now** → the row
    appears in Supabase.
 8. Sign in on a second phone → the reminders and history arrive.
+9. Profile → Account → **Change password**, set a new one, sign out and sign back in
+   with it.
+10. (Optional, it is irreversible) Profile → Account → **Delete account** → the
+    account disappears from Authentication → Users, its rows disappear from
+    `reminders` / `dose_events`, and the app falls back to guest mode with the local
+    reminders still on the phone.
 
 ## 6. Adding the secrets
 

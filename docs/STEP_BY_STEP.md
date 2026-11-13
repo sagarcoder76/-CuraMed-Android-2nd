@@ -82,7 +82,17 @@ You will only ever see *your* rows — that is row level security doing its job.
 4. Now tap **Take Now** on the first phone → open the second phone → **Profile →
    Sync now** → **History & Logs** shows that dose.
 
-## Step 8 — Airplane mode test
+## Step 8 — Account actions (optional)
+
+Both live under **Profile → Account** and only appear once you are signed in.
+
+- **Change password** → type a new password (6+ characters) → **Save**. It changes
+  right away, no email needed. Test it by signing out and back in.
+- **Delete account** → this is permanent. It removes the account, its profile row,
+  its reminders and its dose log from Supabase. Reminders already on this phone stay
+  on this phone, and the app drops back to guest mode. Use it only on a test account.
+
+## Step 9 — Airplane mode test
 
 1. Turn on airplane mode.
 2. Add a reminder or tap **Take Now** — the app behaves normally.

@@ -392,6 +392,16 @@
             <p id="sync-status" class="min-w-0 flex-1 truncate text-[11px] font-semibold text-on-surface-variant">Ready to sync</p>
             <button id="account-sync" class="shrink-0 rounded-lg bg-primary-light px-2.5 py-1 text-[11px] font-extrabold text-primary active:scale-95">Sync now</button>
           </div>
+          <div id="account-actions" class="mt-2 hidden flex-col gap-2">
+            <div id="pw-row" class="hidden items-center gap-2 rounded-xl bg-white px-3 py-2 ring-1 ring-slate-100">
+              <input id="pw-new" type="password" autocomplete="new-password" placeholder="New password (6+)" class="h-9 min-w-0 flex-1 rounded-lg bg-surface-low px-2 text-[11px] font-semibold outline-none" />
+              <button id="pw-save" class="shrink-0 rounded-lg bg-primary px-2.5 py-1 text-[11px] font-extrabold text-white active:scale-95">Save</button>
+            </div>
+            <div class="flex gap-2">
+              <button id="account-change-pw" class="h-9 flex-1 rounded-lg bg-white px-2 text-[11px] font-extrabold text-primary ring-1 ring-slate-200 active:scale-[.99]">Change password</button>
+              <button id="account-delete" class="h-9 flex-1 rounded-lg bg-white px-2 text-[11px] font-extrabold text-accent ring-1 ring-accent/30 active:scale-[.99]">Delete account</button>
+            </div>
+          </div>
           <p id="account-note" class="mt-2 text-[11px] leading-4 text-on-surface-variant">Reminders, scans and history stay on this device.</p>
         </div>
         <label class="flex items-center justify-between rounded-2xl bg-surface-low p-4">
@@ -1342,6 +1352,9 @@ function renderAccount(){
   if(note)note.textContent=u?'Signed in. Reminders and dose log back up to your account.':(ready?'Sign in to back up reminders and sync across phones.':'Add your Supabase URL and anon key to enable login.');
   const row=$('account-sync-row');
   if(row){row.classList.toggle('hidden',!u);row.classList.toggle('flex',!!u)}
+  const acts=$('account-actions');
+  if(acts){acts.classList.toggle('hidden',!u);acts.classList.toggle('flex',!!u)}
+  if(!u){const pw=$('pw-row');if(pw){pw.classList.add('hidden');pw.classList.remove('flex')}}
   if(u&&typeof setSyncStatus==='function')setSyncStatus();
   const syncBtn=$('account-sync');
   if(syncBtn)syncBtn.onclick=()=>{if(typeof syncNow==='function')syncNow(false)};
@@ -1360,6 +1373,42 @@ if(authScreen){
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){authError('Enter your email first, then tap Forgot password.');return}
     try{await sbRequest('/auth/v1/recover',{method:'POST',body:{email}});showToast('Reset link sent to '+email+'.')}
     catch(e){authError(prettyAuthError(e))}
+  };
+  /* Signed-in account actions: change the password without email, and delete the
+     account together with its cloud backup. Local rows stay on the phone. */
+  const pwRow=$('pw-row');
+  function togglePwRow(show){
+    if(!pwRow)return;
+    const open=show===undefined?pwRow.classList.contains('hidden'):show;
+    pwRow.classList.toggle('hidden',!open);pwRow.classList.toggle('flex',open);
+    if(open&&$('pw-new'))$('pw-new').focus();
+  }
+  if($('account-change-pw'))$('account-change-pw').onclick=()=>togglePwRow();
+  if($('pw-save'))$('pw-save').onclick=async()=>{
+    const s=authSession();
+    if(!s){showToast('Sign in first.');return}
+    const pw=($('pw-new').value||'').trim();
+    if(pw.length<6){showToast('Password must be at least 6 characters.');return}
+    if(!navigator.onLine){showToast('No internet — try again when you are online.');return}
+    try{
+      await sbRequest('/auth/v1/user',{method:'PUT',accessToken:s.access_token,body:{password:pw}});
+      $('pw-new').value='';togglePwRow(false);showToast('Password changed. Use the new one next time.');
+    }catch(e){showToast(e.message||'Could not change the password.')}
+  };
+  if($('account-delete'))$('account-delete').onclick=async()=>{
+    const s=authSession();
+    if(!s){showToast('Sign in first.');return}
+    if(!confirm('Delete your account and its cloud backup? Your reminders on this phone stay here, but the account and its synced data are gone for good.'))return;
+    try{
+      await sbRequest('/rest/v1/rpc/delete_own_account',{method:'POST',accessToken:s.access_token,body:{}});
+    }catch(e){showToast(e.message||'Could not delete the account. Check your internet and try again.');return}
+    localStorage.removeItem(SYNCQ_KEY);
+    localStorage.removeItem(SYNC_AT_KEY);
+    localStorage.removeItem(SYNC_UID);
+    localStorage.setItem(AUTH_SKIP,'1');
+    saveAuthSession(null);
+    renderAccount();
+    showToast('Account deleted. This phone keeps your local data.');
   };
   $('auth-form').onsubmit=async e=>{
     e.preventDefault();
