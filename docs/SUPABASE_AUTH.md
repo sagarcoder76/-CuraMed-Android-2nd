@@ -1,8 +1,9 @@
 # Login (Supabase) — setup and how it works
 
-Medsathi uses **Supabase Auth** for email + password login. Nothing else moves to
-the cloud: reminders, scans and dose history stay in the phone's storage. Only a
-single `profiles` row (name, email, language) is synced.
+Medsathi uses **Supabase** for two things: email + password **login**, and an
+opt-in **backup of reminders and the dose log** so the same data appears on a second
+phone. Scans and the medicine library never leave the device, and the app works
+fully offline as a guest.
 
 Working project: **medsathi** (`ljuertzeznwzyskluptz`, region `ap-south-1`, free plan).
 
@@ -61,6 +62,44 @@ create trigger on_auth_user_created after insert on auth.users
 Result: a user can read and write **only their own row**. There is no policy that
 lets one user see another's data, and no anonymous access at all.
 
+### Synced tables (migration `create_sync_tables`)
+
+```sql
+create table public.reminders (
+  id text primary key,                  -- the phone's own id, so rows merge 1:1
+  user_id uuid not null references auth.users(id) on delete cascade,
+  medicine_name text not null,
+  dosage text,
+  reminder_time text not null,
+  repeat_type text default 'daily',
+  enabled boolean default true,
+  last_taken timestamptz,
+  updated_at timestamptz default now()
+);
+create table public.dose_events (
+  id text primary key,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  reminder_id text,
+  medicine_name text,
+  dosage text,
+  action text,
+  action_time timestamptz not null,
+  created_at timestamptz default now()
+);
+
+alter table public.reminders  enable row level security;
+alter table public.dose_events enable row level security;
+
+create policy "reminders_own_all" on public.reminders
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "dose_events_own_all" on public.dose_events
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+```
+
+`id` is `text`, not `uuid`, because the phone already generates IDs with
+`Date.now()`. Using the phone's ID as the primary key means a row is inserted once
+and re-pushed safely (`Prefer: resolution=merge-duplicates` acts as an upsert).
+
 ## 3. Auth settings
 
 | Setting | Value | Why |
@@ -91,6 +130,23 @@ Turn **Confirm email** back on before a public release.
 - **Guest mode** → "Continue as guest" hides the screen and everything keeps working
   offline; Profile → Account → "Sign in / Create" reopens it.
 
+### Sync engine
+
+Local storage stays the **source of truth**; the cloud is a mirror, so nothing breaks
+in airplane mode.
+
+| Event | What happens |
+|---|---|
+| Sign in / app start | `flushSyncQueue()` then `pullCloud()` — cloud rows missing on the phone are added, phone rows missing in the cloud are pushed |
+| Add / edit / toggle reminder | `pushReminder()` (upsert) |
+| Delete reminder | `deleteCloudReminder()` |
+| Log a dose (taken / snoozed) | `pushDose()` and, for taken, `pushReminder()` so `last_taken` follows |
+| Write fails (offline) | op is queued in `curamed.syncq.v1` and retried on the next sync or when the `online` event fires |
+| Sign out | session, queue and sync stamp are dropped; local reminders and history are **kept** |
+| Different account signs in on the same phone | pull only — local rows are never pushed into another person's account |
+
+Profile → Account shows the last sync time and a **Sync now** button.
+
 No SDK is bundled — the app talks to the REST endpoints with `fetch`, so it stays
 offline-first and small. If the network is down the error says so instead of hanging.
 
@@ -103,6 +159,12 @@ offline-first and small. If the network is down the error says so instead of han
 4. **Sign out** in Profile → avatar dot disappears, guests still see all features.
 5. Supabase dashboard → Authentication → Users: your account is listed; Table editor
    → `profiles`: one row with your name.
+6. Add a reminder and mark a dose taken → Table editor → `reminders` and
+   `dose_events` each get a row for your user id.
+7. Turn on airplane mode, add another reminder → it still works and Profile → Account
+   says "Offline — will retry". Turn the network back on, tap **Sync now** → the row
+   appears in Supabase.
+8. Sign in on a second phone → the reminders and history arrive.
 
 ## 6. Adding the secrets
 
